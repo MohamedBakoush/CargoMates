@@ -423,15 +423,36 @@ export function switchMode(mode) {
   }
 }
 
-export function driverBid(pkgId, amount) {
+export const PICKUP_TIMES = [
+  { id: 'today', label: 'Today', hint: 'Within a few hours' },
+  { id: 'tomorrow', label: 'Tomorrow', hint: 'Morning pickup' },
+  { id: '2days', label: 'In 2 days', hint: 'Flexible schedule' },
+  { id: 'week', label: 'Within a week', hint: 'Cheapest for sender' },
+]
+
+export const PICKUP_LOCATIONS = [
+  { id: 'sender', label: 'Sender address', hint: 'Go to the pickup address listed' },
+  { id: 'hub', label: 'Nearest hub', hint: 'Sender drops it off at a CargoMates hub' },
+  { id: 'custom', label: 'Custom meetup', hint: 'Agree on a location with the sender' },
+]
+
+export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
   const pkg = state.driverPackages.find(p => p.id === pkgId)
   if (!pkg || pkg.status !== 'available') return
   pkg.status = 'bid-sent'
   pkg.myBid = amount
+  pkg.estPickupTime = pickupTime || 'today'
+  pkg.estPickupLocation = pickupLocation || 'sender'
+  const timeObj = PICKUP_TIMES.find(t => t.id === pkg.estPickupTime)
+  const locObj = PICKUP_LOCATIONS.find(l => l.id === pkg.estPickupLocation)
+  pkg.estPickupLabel = timeObj ? timeObj.label : pkg.estPickupTime
+  pkg.estLocationLabel = locObj ? locObj.label : pkg.estPickupLocation
   setTimeout(() => {
     if (pkg.status !== 'bid-sent') return
     pkg.status = 'accepted'
-    pkg.pickup = new Date().toISOString().slice(0, 10)
+    const days = { today: 0, tomorrow: 1, '2days': 2, week: 5 }[pkg.estPickupTime] || 0
+    const d = new Date(); d.setDate(d.getDate() + days)
+    pkg.pickup = d.toISOString().slice(0, 10)
   }, 2000 + Math.random() * 2000)
 }
 

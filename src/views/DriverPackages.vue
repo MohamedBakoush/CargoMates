@@ -52,6 +52,7 @@ function statusClass(s) {
           <div class="pkg-info">
             <span class="pkg-route">{{ pkg.from }} → {{ pkg.to }}</span>
             <span class="pkg-what">{{ pkg.what }}</span>
+            <span v-if="pkg.estPickupLabel" class="pkg-est">{{ pkg.estPickupLabel }} · {{ pkg.estLocationLabel }}</span>
           </div>
           <span class="status-badge" :class="statusClass(pkg.status)">{{ statusLabel(pkg.status) }}</span>
           <Icon name="next" :size="18" class="muted" />
@@ -88,6 +89,7 @@ function statusClass(s) {
 .pkg-route { font-size: 17px; font-weight: 600; }
 .pkg-what { font-size: 15px; color: var(--muted); }
 .pkg-sender { font-size: 14px; color: var(--muted); }
+.pkg-est { font-size: 13px; color: var(--navy); font-weight: 500; }
 .pkg-price { font-size: 18px; font-weight: 700; white-space: nowrap; }
 
 .pkg-section { display: flex; flex-direction: column; gap: 10px; max-width: 700px; }

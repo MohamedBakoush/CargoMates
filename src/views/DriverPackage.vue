@@ -1,17 +1,19 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, kr, driverBid, driverConfirmPickup, driverGoTracking } from '../store.js'
+import { state, go, kr, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const pkg = computed(() => state.driverActive)
 const bidAmount = ref('')
 const bidSending = ref(false)
+const pickupTime = ref('today')
+const pickupLocation = ref('sender')
 
 function placeBid() {
   if (!pkg.value) return
   const amount = parseInt(bidAmount.value) || pkg.value.price
   bidSending.value = true
-  driverBid(pkg.value.id, amount)
+  driverBid(pkg.value.id, amount, pickupTime.value, pickupLocation.value)
 }
 
 const canPickup = computed(() => pkg.value && pkg.value.status === 'accepted')
@@ -65,10 +67,36 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
       <div v-if="pkg.status === 'available'" class="bid-panel card">
         <h2 class="bid-title">Place your bid</h2>
         <p class="muted">Suggested: {{ kr(pkg.price) }}</p>
+
         <div class="bid-row">
           <label class="bid-label">Your price (kr)</label>
           <input v-model="bidAmount" type="number" class="bid-input" :placeholder="String(pkg.price)" />
         </div>
+
+        <div class="bid-row">
+          <label class="bid-label">Estimated pickup time</label>
+          <div class="option-grid">
+            <button v-for="t in PICKUP_TIMES" :key="t.id"
+                    class="opt-card" :class="{ selected: pickupTime === t.id }"
+                    @click="pickupTime = t.id">
+              <span class="opt-label">{{ t.label }}</span>
+              <span class="opt-hint">{{ t.hint }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bid-row">
+          <label class="bid-label">Where do you pick up?</label>
+          <div class="option-grid cols-3">
+            <button v-for="l in PICKUP_LOCATIONS" :key="l.id"
+                    class="opt-card" :class="{ selected: pickupLocation === l.id }"
+                    @click="pickupLocation = l.id">
+              <span class="opt-label">{{ l.label }}</span>
+              <span class="opt-hint">{{ l.hint }}</span>
+            </button>
+          </div>
+        </div>
+
         <button class="btn btn-driver" @click="placeBid">
           <Icon name="truck" :size="20" /> Bid {{ kr(parseInt(bidAmount) || pkg.price) }}
         </button>
@@ -79,13 +107,21 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
         <div class="pulse-ring" />
         <h2>Bid sent — {{ kr(pkg.myBid) }}</h2>
         <p class="muted">Waiting for the sender to accept…</p>
+        <div class="est-summary">
+          <span class="est-chip"><Icon name="calendar" :size="14" /> {{ pkg.estPickupLabel }}</span>
+          <span class="est-chip"><Icon name="pin" :size="14" /> {{ pkg.estLocationLabel }}</span>
+        </div>
       </div>
 
       <!-- Accepted → pickup -->
       <div v-else-if="canPickup" class="status-panel card accepted-panel">
         <div class="check-circle"><Icon name="check" :size="28" /></div>
         <h2>Accepted!</h2>
-        <p class="muted">Go to {{ pkg.pickupAddr }} and confirm pickup.</p>
+        <p class="muted">Go to {{ pkg.estPickupLocation === 'sender' ? pkg.pickupAddr : (pkg.estPickupLocation === 'hub' ? 'the nearest CargoMates hub' : 'the agreed meetup point') }} and confirm pickup.</p>
+        <div class="est-summary">
+          <span class="est-chip"><Icon name="calendar" :size="14" /> {{ pkg.estPickupLabel }}</span>
+          <span class="est-chip"><Icon name="pin" :size="14" /> {{ pkg.estLocationLabel }}</span>
+        </div>
       </div>
 
       <!-- Picked up → tracking & dropoff -->
@@ -147,6 +183,17 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 .bid-input:focus { border-color: var(--navy); outline: none; }
 
 .btn-driver { background: var(--navy); border-color: var(--navy); color: #fff; min-height: 56px; font-size: 17px; font-weight: 600; border-radius: 16px; border: 0; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+
+.option-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.opt-card { border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.opt-card:hover { border-color: var(--navy); }
+.opt-card.selected { border: 2.5px solid var(--navy); background: #F0F4FA; }
+.opt-label { font-size: 15px; font-weight: 600; }
+.opt-hint { font-size: 13px; color: var(--muted); }
+
+.est-summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.est-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 500; background: var(--soft); padding: 6px 12px; border-radius: 999px; color: var(--navy); }
 
 .status-panel { max-width: 700px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; text-align: center; }
 .status-panel h2 { margin: 0; font-size: 22px; }
