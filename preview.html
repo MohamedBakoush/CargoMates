@@ -1,0 +1,48 @@
+<title>CargoMates Booking</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  /* Single light look on purpose: the app's own warm off-white world. */
+  :root { --boot-bg: #FBF8F3; --boot-ink: #1F1D1A; --boot-muted: #6B655C; color-scheme: light; }
+  html, body { height: 100%; }
+  body { background: var(--boot-bg); color: var(--boot-ink); font-family: 'Figtree', system-ui, sans-serif; }
+  #boot { height: 100%; display: flex; align-items: center; justify-content: center; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); color: var(--boot-muted); font-size: 17px; text-align: center; }
+</style>
+
+<div id="app"><div id="boot">Loading CargoMates…</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader@0.9.5/dist/vue3-sfc-loader.js"></script>
+<script>
+  // Loads the exact same .vue files as the Vite project, compiled in the browser.
+  (async function () {
+    const boot = document.getElementById('boot')
+    function fail(err) {
+      console.error(err)
+      boot.textContent = 'Could not start the prototype: ' + (err && err.message ? err.message : err)
+    }
+    try {
+      const clean = (p) => String(p).replace(/^\.?\//, '')
+      const css = await fetch('src/style.css').then((r) => r.text())
+      document.head.appendChild(Object.assign(document.createElement('style'), { textContent: css }))
+
+      const options = {
+        moduleCache: { vue: Vue },
+        async getFile(url) {
+          const res = await fetch(clean(url))
+          if (!res.ok) throw new Error(res.status + ' ' + url)
+          return { getContentData: (asBinary) => (asBinary ? res.arrayBuffer() : res.text()) }
+        },
+        addStyle(textContent) {
+          document.head.appendChild(Object.assign(document.createElement('style'), { textContent }))
+        },
+        log(type, ...args) { console[type](...args) },
+      }
+      const { loadModule } = window['vue3-sfc-loader']
+      const App = await loadModule('./src/App.vue', options)
+      Vue.createApp(App).mount('#app')
+    } catch (err) {
+      fail(err)
+    }
+  })()
+</script>
