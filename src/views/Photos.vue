@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { state, go, addPhotos, removePhoto, packageLabel } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
@@ -25,12 +25,26 @@ function noPhoto() {
   if (!s.count) s.count = 1
   go('details')
 }
+
+const hasEstimate = computed(() => s.photos.length > 0)
+const volume = computed(() => {
+  const l = parseInt(s.length) || 0
+  const w = parseInt(s.width) || 0
+  const h = parseInt(s.height) || 0
+  return l * w * h
+})
+const volumeLabel = computed(() => {
+  const v = volume.value
+  if (v === 0) return ''
+  if (v < 1000000) return (v / 1000).toFixed(1) + ' litres'
+  return (v / 1000000).toFixed(2) + ' m³'
+})
 </script>
 
 <template>
   <PageLayout>
     <h1 class="h1">What are you sending?</h1>
-    <p class="sub">Add a photo of each package. We work out the size for you.</p>
+    <p class="sub">Add a photo of each package. We analyse it to estimate the size.</p>
 
     <div v-if="!s.photos.length" class="tiles">
       <button class="tile" @click="camera.click()">
@@ -53,10 +67,42 @@ function noPhoto() {
         </div>
         <button class="thumb add" aria-label="Add another photo" @click="picker.click()"><Icon name="plus" :size="34" /></button>
       </div>
-      <div class="card found">
-        <span class="label">We found</span>
-        <span class="found-text">{{ packageLabel }}</span>
-        <span class="muted">You can change this on the next page.</span>
+
+      <div class="card estimate-card">
+        <div class="est-header">
+          <Icon name="check" :size="20" class="est-icon" />
+          <span class="est-title">Estimated from photo</span>
+        </div>
+        <p class="est-sub">We estimated the dimensions below. Adjust if needed — accurate sizes help drivers bid better.</p>
+
+        <div class="dims-grid">
+          <div class="dim-field">
+            <label class="dim-label">Length (cm)</label>
+            <input v-model="s.length" type="number" class="dim-input" placeholder="0" />
+          </div>
+          <div class="dim-field">
+            <label class="dim-label">Width (cm)</label>
+            <input v-model="s.width" type="number" class="dim-input" placeholder="0" />
+          </div>
+          <div class="dim-field">
+            <label class="dim-label">Height (cm)</label>
+            <input v-model="s.height" type="number" class="dim-input" placeholder="0" />
+          </div>
+          <div class="dim-field">
+            <label class="dim-label">Weight (kg)</label>
+            <input v-model="s.weightKg" type="number" class="dim-input weight-input" placeholder="0" />
+          </div>
+        </div>
+
+        <div v-if="volumeLabel" class="vol-row">
+          <span class="vol-label">Volume</span>
+          <span class="vol-value">{{ volumeLabel }}</span>
+        </div>
+
+        <div class="found-row">
+          <span class="label">Category</span>
+          <span class="found-text">{{ packageLabel }}</span>
+        </div>
       </div>
     </template>
 
@@ -87,6 +133,28 @@ function noPhoto() {
 .thumb { position: relative; aspect-ratio: 1; border-radius: 20px; background: #EDE7DD center / cover no-repeat; border: 0; }
 .thumb.add { border: 2px dashed var(--line-strong); background: var(--card); color: var(--muted); display: flex; align-items: center; justify-content: center; }
 .remove { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.92); display: flex; align-items: center; justify-content: center; }
-.found { display: flex; flex-direction: column; gap: 4px; }
-.found-text { font-size: 24px; font-weight: 600; }
+
+.estimate-card { display: flex; flex-direction: column; gap: 16px; }
+.est-header { display: flex; align-items: center; gap: 8px; }
+.est-icon { color: #2B8A3E; }
+.est-title { font-size: 18px; font-weight: 600; }
+.est-sub { font-size: 15px; color: var(--muted); margin: 0; }
+
+.dims-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.dim-field { display: flex; flex-direction: column; gap: 5px; }
+.dim-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.dim-input { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px; font-size: 20px; font-weight: 600; background: var(--bg); text-align: center; width: 100%; }
+.dim-input:focus { border-color: var(--navy); outline: none; }
+.weight-input { border-color: var(--accent); }
+
+.vol-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--soft); border-radius: 12px; }
+.vol-label { font-size: 14px; font-weight: 600; color: var(--muted); }
+.vol-value { font-size: 16px; font-weight: 600; }
+
+.found-row { display: flex; flex-direction: column; gap: 4px; }
+.found-text { font-size: 22px; font-weight: 600; }
+
+@media (max-width: 500px) {
+  .dims-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
