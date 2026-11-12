@@ -26,15 +26,19 @@ function noPhoto() {
   go('details')
 }
 
-const hasEstimate = computed(() => s.photos.length > 0)
-const volume = computed(() => {
-  const l = parseInt(s.length) || 0
-  const w = parseInt(s.width) || 0
-  const h = parseInt(s.height) || 0
-  return l * w * h
-})
-const volumeLabel = computed(() => {
-  const v = volume.value
+function boxVol(p) {
+  return (parseInt(p.length) || 0) * (parseInt(p.width) || 0) * (parseInt(p.height) || 0)
+}
+function volLabel(p) {
+  const v = boxVol(p)
+  if (v === 0) return ''
+  if (v < 1000000) return (v / 1000).toFixed(1) + ' L'
+  return (v / 1000000).toFixed(2) + ' m³'
+}
+
+const totalWeight = computed(() => s.photos.reduce((sum, p) => sum + (parseInt(p.weightKg) || 0), 0))
+const totalVol = computed(() => {
+  const v = s.photos.reduce((sum, p) => sum + boxVol(p), 0)
   if (v === 0) return ''
   if (v < 1000000) return (v / 1000).toFixed(1) + ' litres'
   return (v / 1000000).toFixed(2) + ' m³'
@@ -61,48 +65,55 @@ const volumeLabel = computed(() => {
     </div>
 
     <template v-else>
-      <div class="thumbs">
-        <div v-for="p in s.photos" :key="p.id" class="thumb" :style="{ backgroundImage: `url(${p.url})` }">
-          <button class="remove" aria-label="Remove photo" @click="removePhoto(p.id)"><Icon name="close" :size="18" :stroke="2.4" /></button>
+      <div class="box-list">
+        <div v-for="(p, i) in s.photos" :key="p.id" class="box-row card">
+          <div class="box-header">
+            <div class="box-thumb" :style="{ backgroundImage: `url(${p.url})` }">
+              <button class="remove" aria-label="Remove" @click="removePhoto(p.id)"><Icon name="close" :size="14" :stroke="2.4" /></button>
+            </div>
+            <div class="box-title-area">
+              <span class="box-num">Box {{ i + 1 }}</span>
+              <span v-if="volLabel(p)" class="box-vol">{{ volLabel(p) }}</span>
+            </div>
+          </div>
+          <div class="dims-row">
+            <div class="dim-field">
+              <label class="dim-label">L (cm)</label>
+              <input v-model="p.length" type="number" class="dim-input" placeholder="0" />
+            </div>
+            <span class="dim-x">×</span>
+            <div class="dim-field">
+              <label class="dim-label">W (cm)</label>
+              <input v-model="p.width" type="number" class="dim-input" placeholder="0" />
+            </div>
+            <span class="dim-x">×</span>
+            <div class="dim-field">
+              <label class="dim-label">H (cm)</label>
+              <input v-model="p.height" type="number" class="dim-input" placeholder="0" />
+            </div>
+            <div class="dim-field weight-field">
+              <label class="dim-label">kg</label>
+              <input v-model="p.weightKg" type="number" class="dim-input weight-input" placeholder="0" />
+            </div>
+          </div>
         </div>
-        <button class="thumb add" aria-label="Add another photo" @click="picker.click()"><Icon name="plus" :size="34" /></button>
+
+        <button class="add-box" @click="picker.click()">
+          <Icon name="plus" :size="22" /> Add another box
+        </button>
       </div>
 
-      <div class="card estimate-card">
-        <div class="est-header">
-          <Icon name="check" :size="20" class="est-icon" />
-          <span class="est-title">Estimated from photo</span>
+      <div class="totals card" v-if="s.photos.length > 1">
+        <div class="total-row">
+          <span class="total-label">{{ s.photos.length }} boxes</span>
+          <span class="total-value">{{ totalWeight }} kg total</span>
+          <span v-if="totalVol" class="total-value muted">{{ totalVol }}</span>
         </div>
-        <p class="est-sub">We estimated the dimensions below. Adjust if needed — accurate sizes help drivers bid better.</p>
+      </div>
 
-        <div class="dims-grid">
-          <div class="dim-field">
-            <label class="dim-label">Length (cm)</label>
-            <input v-model="s.length" type="number" class="dim-input" placeholder="0" />
-          </div>
-          <div class="dim-field">
-            <label class="dim-label">Width (cm)</label>
-            <input v-model="s.width" type="number" class="dim-input" placeholder="0" />
-          </div>
-          <div class="dim-field">
-            <label class="dim-label">Height (cm)</label>
-            <input v-model="s.height" type="number" class="dim-input" placeholder="0" />
-          </div>
-          <div class="dim-field">
-            <label class="dim-label">Weight (kg)</label>
-            <input v-model="s.weightKg" type="number" class="dim-input weight-input" placeholder="0" />
-          </div>
-        </div>
-
-        <div v-if="volumeLabel" class="vol-row">
-          <span class="vol-label">Volume</span>
-          <span class="vol-value">{{ volumeLabel }}</span>
-        </div>
-
-        <div class="found-row">
-          <span class="label">Category</span>
-          <span class="found-text">{{ packageLabel }}</span>
-        </div>
+      <div class="found-row">
+        <span class="label">Category</span>
+        <span class="found-text">{{ packageLabel }}</span>
       </div>
     </template>
 
@@ -129,32 +140,40 @@ const volumeLabel = computed(() => {
 .tile.over { border-color: var(--accent); background: #FFF7EF; }
 .circle { width: 88px; height: 88px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; }
 .tile-title { font-size: 22px; font-weight: 600; }
-.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-.thumb { position: relative; aspect-ratio: 1; border-radius: 20px; background: #EDE7DD center / cover no-repeat; border: 0; }
-.thumb.add { border: 2px dashed var(--line-strong); background: var(--card); color: var(--muted); display: flex; align-items: center; justify-content: center; }
-.remove { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.92); display: flex; align-items: center; justify-content: center; }
 
-.estimate-card { display: flex; flex-direction: column; gap: 16px; }
-.est-header { display: flex; align-items: center; gap: 8px; }
-.est-icon { color: #2B8A3E; }
-.est-title { font-size: 18px; font-weight: 600; }
-.est-sub { font-size: 15px; color: var(--muted); margin: 0; }
+.box-list { display: flex; flex-direction: column; gap: 12px; }
 
-.dims-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.dim-field { display: flex; flex-direction: column; gap: 5px; }
-.dim-label { font-size: 13px; font-weight: 600; color: var(--muted); }
-.dim-input { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px; font-size: 20px; font-weight: 600; background: var(--bg); text-align: center; width: 100%; }
+.box-row { display: flex; flex-direction: column; gap: 12px; }
+.box-header { display: flex; align-items: center; gap: 12px; }
+.box-thumb { width: 56px; height: 56px; border-radius: 14px; background: #EDE7DD center / cover no-repeat; flex: none; position: relative; }
+.box-thumb .remove { position: absolute; top: -6px; right: -6px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; padding: 0; }
+.box-title-area { display: flex; align-items: baseline; gap: 8px; }
+.box-num { font-size: 17px; font-weight: 600; }
+.box-vol { font-size: 14px; color: var(--muted); }
+
+.dims-row { display: flex; align-items: flex-end; gap: 6px; }
+.dim-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.dim-label { font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; }
+.dim-input { padding: 10px 6px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 18px; font-weight: 600; background: var(--bg); text-align: center; width: 100%; }
 .dim-input:focus { border-color: var(--navy); outline: none; }
+.dim-x { font-size: 18px; color: var(--muted); padding-bottom: 12px; flex: none; }
+.weight-field { flex: 1.1; }
 .weight-input { border-color: var(--accent); }
 
-.vol-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--soft); border-radius: 12px; }
-.vol-label { font-size: 14px; font-weight: 600; color: var(--muted); }
-.vol-value { font-size: 16px; font-weight: 600; }
+.add-box { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border: 2px dashed var(--line-strong); border-radius: var(--radius); background: transparent; font-size: 16px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.add-box:hover { border-color: var(--navy); color: var(--ink); }
+
+.totals { padding: 14px 18px; }
+.total-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.total-label { font-size: 16px; font-weight: 600; }
+.total-value { font-size: 15px; font-weight: 600; }
 
 .found-row { display: flex; flex-direction: column; gap: 4px; }
 .found-text { font-size: 22px; font-weight: 600; }
 
 @media (max-width: 500px) {
-  .dims-grid { grid-template-columns: repeat(2, 1fr); }
+  .dims-row { flex-wrap: wrap; }
+  .dim-x { display: none; }
+  .dim-field { flex-basis: 40%; }
 }
 </style>

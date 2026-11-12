@@ -101,13 +101,9 @@ const STORAGE_KEY = 'cargomates-v1'
 
 function freshShipment() {
   return {
-    photos: [], // { id, url, estLength, estWidth, estHeight }  (not persisted)
+    photos: [], // { id, url, length, width, height, weightKg }  (not persisted)
     count: 0,
     size: 'medium',
-    length: '',
-    width: '',
-    height: '',
-    weightKg: '',
     from: ORIGIN.name,
     to: null, // city object
     toQuery: '',
@@ -269,45 +265,36 @@ export function addPhotos(files) {
     const estL = 30 + Math.floor(Math.random() * 50)
     const estW = 20 + Math.floor(Math.random() * 30)
     const estH = 15 + Math.floor(Math.random() * 35)
+    const vol = estL * estW * estH
+    const estKg = Math.max(1, Math.round(vol / 5000 * (1.5 + Math.random())))
     state.shipment.photos.push({
       id: Math.random().toString(36).slice(2),
       url: URL.createObjectURL(f),
-      estLength: estL, estWidth: estW, estHeight: estH,
+      length: String(estL), width: String(estW), height: String(estH),
+      weightKg: String(estKg),
     })
   }
   state.shipment.count = state.shipment.photos.length
-  estimateDimensions()
+  updateSizeFromPhotos()
 }
 
-function estimateDimensions() {
+function updateSizeFromPhotos() {
   const photos = state.shipment.photos
   if (!photos.length) return
-  const avgL = Math.round(photos.reduce((s, p) => s + p.estLength, 0) / photos.length)
-  const avgW = Math.round(photos.reduce((s, p) => s + p.estWidth, 0) / photos.length)
-  const avgH = Math.round(photos.reduce((s, p) => s + p.estHeight, 0) / photos.length)
-  if (!state.shipment.length) state.shipment.length = String(avgL)
-  if (!state.shipment.width) state.shipment.width = String(avgW)
-  if (!state.shipment.height) state.shipment.height = String(avgH)
-  const vol = avgL * avgW * avgH
-  if (vol < 20000) state.shipment.size = 'small'
-  else if (vol < 100000) state.shipment.size = 'medium'
-  else if (vol < 400000) state.shipment.size = 'large'
-  else state.shipment.size = 'pallet'
-  if (!state.shipment.weightKg) {
-    const estKg = Math.round(vol / 5000 * (1.5 + Math.random()))
-    state.shipment.weightKg = String(Math.max(1, estKg))
+  let maxVol = 0
+  for (const p of photos) {
+    const v = (parseInt(p.length) || 0) * (parseInt(p.width) || 0) * (parseInt(p.height) || 0)
+    if (v > maxVol) maxVol = v
   }
+  if (maxVol < 20000) state.shipment.size = 'small'
+  else if (maxVol < 100000) state.shipment.size = 'medium'
+  else if (maxVol < 400000) state.shipment.size = 'large'
+  else state.shipment.size = 'pallet'
 }
 
 export function removePhoto(id) {
   state.shipment.photos = state.shipment.photos.filter((p) => p.id !== id)
   state.shipment.count = Math.max(state.shipment.photos.length, state.shipment.count ? 1 : 0)
-  if (!state.shipment.photos.length) {
-    state.shipment.length = ''
-    state.shipment.width = ''
-    state.shipment.height = ''
-    state.shipment.weightKg = ''
-  }
 }
 
 function addDays(date, n) {
