@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { state, go, fmtDay, kr, setStatus } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
+import Guarantees from '../components/Guarantees.vue'
 
 const s = state.shipment
 const hasArrived = computed(() => s.booking && s.booking.arrived)
@@ -68,6 +69,8 @@ function track() {
         <div class="label">Delivered to</div>
         <div class="name">{{ s.to.name }}, {{ s.to.country }}</div>
       </div>
+
+      <Guarantees compact />
 
       <button class="card row link" @click="go('calendar')">
         <Icon name="calendar" :size="28" />

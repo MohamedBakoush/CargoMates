@@ -15,6 +15,14 @@ const selected = computed(() => s.selectedBid)
     <h1 class="h1">Drivers are bidding on your shipment</h1>
     <p class="sub">Sit tight — drivers on your route are reviewing and placing bids. You pick the one you like.</p>
 
+    <div class="promise-strip">
+      <span class="promise-item">Guaranteed delivery date</span>
+      <span class="promise-dot">·</span>
+      <span class="promise-item">€40 back if late</span>
+      <span class="promise-dot">·</span>
+      <span class="promise-item">Full refund for no-show</span>
+    </div>
+
     <div v-if="stillWaiting && !hasBids" class="searching">
       <div class="pulse-ring" />
       <p class="search-text">Looking for drivers on the {{ s.from }} → {{ s.to ? s.to.name : '' }} route…</p>
@@ -234,6 +242,21 @@ const selected = computed(() => s.selectedBid)
   min-width: 0;
   width: 100%;
 }
+
+.promise-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #EEF2FA;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+}
+.promise-dot { color: var(--muted); }
 
 /* transitions */
 .bid-enter-active { animation: slide-in 0.35s ease-out; }

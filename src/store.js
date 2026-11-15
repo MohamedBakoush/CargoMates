@@ -49,9 +49,18 @@ export const KINDS = [
 ]
 
 export const DELIVERY = [
-  { id: 'door', title: 'To the exact address', hint: 'Door to door', factor: 1.15, trucks: 2 },
-  { id: 'hub', title: 'Close by, I pick it up', hint: 'At a hub within 60 km', factor: 0.8, trucks: 6, tag: 'Cheapest' },
-  { id: 'lastmile', title: 'Close by, you do the last stretch', hint: 'Truck to a hub, we send a local van to the door', factor: 0.95, trucks: 6 },
+  { id: 'door', title: 'Pickup at your door', hint: 'We come to you — no drop-off needed', factor: 1.15, trucks: 2, tag: 'Most popular' },
+  { id: 'hub', title: 'I drop it at a hub', hint: 'At a hub within 60 km', factor: 0.8, trucks: 6, tag: 'Cheapest' },
+  { id: 'lastmile', title: 'Hub + last-mile van', hint: 'Truck to a hub, we send a local van to the door', factor: 0.95, trucks: 6 },
+]
+
+export const GUARANTEES = [
+  { id: 'date', icon: 'calendar', title: 'Guaranteed delivery date', desc: 'We promise a date. If we miss it, you get compensation.' },
+  { id: 'late', icon: 'clock', title: '€40 back if we\'re late', desc: 'Automatic payout to you if delivery is even one day late.' },
+  { id: 'replace', icon: 'refresh', title: 'Replacement truck in 48h', desc: 'If the carrier can\'t make it, we find another one within 48 hours.' },
+  { id: 'noshow', icon: 'shield', title: 'Full refund + €25 for no-show', desc: 'If nobody picks up your goods, full refund plus €25 credit.' },
+  { id: 'contact', icon: 'headphones', title: 'One contact for everything', desc: 'Damage, loss, delays — one person handles it all, not you.' },
+  { id: 'window', icon: 'door', title: 'Half-day pickup slot', desc: 'Morning or afternoon — we don\'t waste your whole day.' },
 ]
 
 const DRIVERS = [
@@ -113,7 +122,7 @@ function freshShipment() {
     value: '',
     kind: 'sale',
     fakturaName: '',
-    delivery: 'hub',
+    delivery: 'door',
     status: 'draft', // draft | bidding | booked | onway | arrived | paid
     bids: [],        // { driver, price, eta, time }
     bidsComplete: false,

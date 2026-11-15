@@ -1,14 +1,15 @@
 <script setup>
 import { state, go, DELIVERY, priceFor, price, kr, isAbroad, book } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
+import Guarantees from '../components/Guarantees.vue'
 
 const s = state.shipment
 </script>
 
 <template>
   <PageLayout :back="isAbroad ? 'customs' : 'details'">
-    <h1 class="h1">How close to {{ s.to ? s.to.name : 'the destination' }} is good enough?</h1>
-    <p class="sub">Close by is cheaper and finds a truck sooner. We'll notify you when you have a new offer.</p>
+    <h1 class="h1">How should we handle pickup?</h1>
+    <p class="sub">We come to you by default — no need to drop anything off.</p>
 
     <button v-for="d in DELIVERY" :key="d.id" class="option" :class="{ selected: s.delivery === d.id }" @click="s.delivery = d.id">
       <span class="grow">
@@ -20,10 +21,12 @@ const s = state.shipment
       <span class="radio" />
     </button>
 
+    <Guarantees compact />
+
     <template #actions>
       <div class="info">
         <span class="big">{{ kr(price) }}</span>
-        <span class="small">{{ isAbroad ? 'Customs and damage cover included' : 'Damage cover included' }} · pay when it arrives</span>
+        <span class="small">{{ isAbroad ? 'Customs and damage cover included' : 'All guarantees included' }} · pay when it arrives</span>
       </div>
       <button class="btn btn-primary" @click="book">Book</button>
     </template>

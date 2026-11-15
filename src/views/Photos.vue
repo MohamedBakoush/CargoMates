@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { state, go, addPhotos, removePhoto, packageLabel } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
+import Guarantees from '../components/Guarantees.vue'
 
 const s = state.shipment
 const camera = ref(null)
@@ -47,7 +48,15 @@ const totalVol = computed(() => {
 
 <template>
   <PageLayout>
-    <h1 class="h1">What are you sending?</h1>
+    <div v-if="!s.photos.length" class="hero-banner">
+      <h1 class="hero-title">Ship anything, anywhere.<br/>We pick up at your door.</h1>
+      <div class="hero-pills">
+        <span class="hero-pill"><Icon name="door" :size="16" :stroke="2" /> Pickup at your door</span>
+        <span class="hero-pill"><Icon name="calendar" :size="16" :stroke="2" /> Guaranteed delivery date</span>
+        <span class="hero-pill"><Icon name="shield" :size="16" :stroke="2" /> Full protection included</span>
+      </div>
+    </div>
+    <h1 v-else class="h1">What are you sending?</h1>
     <p class="sub">Add a photo of each package. We analyse it to estimate the size.</p>
 
     <div v-if="!s.photos.length" class="tiles">
@@ -122,6 +131,8 @@ const totalVol = computed(() => {
       <span class="chip">Show the whole box</span>
     </div>
 
+    <Guarantees v-if="!s.photos.length" />
+
     <input ref="camera" type="file" accept="image/*" capture="environment" hidden @change="onFiles">
     <input ref="picker" type="file" accept="image/*" multiple hidden @change="onFiles">
 
@@ -171,9 +182,15 @@ const totalVol = computed(() => {
 .found-row { display: flex; flex-direction: column; gap: 4px; }
 .found-text { font-size: 22px; font-weight: 600; }
 
+.hero-banner { text-align: center; padding: 8px 0 4px; }
+.hero-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 16px; }
+.hero-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hero-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--navy); background: #EEF2FA; padding: 6px 14px; border-radius: 999px; white-space: nowrap; }
+
 @media (max-width: 500px) {
   .dims-row { flex-wrap: wrap; }
   .dim-x { display: none; }
   .dim-field { flex-basis: 40%; }
+  .hero-title { font-size: 24px; }
 }
 </style>
