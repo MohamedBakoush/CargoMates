@@ -4,27 +4,58 @@ import { reactive, computed, watch } from 'vue'
 // Mock data. Swap these for real API calls later.
 // ---------------------------------------------------------------------------
 
-export const ORIGIN = { name: 'Drammen', country: 'Norway' }
+export const ORIGIN = { name: 'Drammen', country: 'Norway', lat: 59.74, lon: 10.2 }
 
 // km from Drammen, rough road distance
 export const CITIES = [
-  { name: 'Oslo', country: 'Norway', km: 40 },
-  { name: 'Kongsberg', country: 'Norway', km: 40 },
-  { name: 'Kristiansand', country: 'Norway', km: 290 },
-  { name: 'Bergen', country: 'Norway', km: 460 },
-  { name: 'Stavanger', country: 'Norway', km: 520 },
-  { name: 'Trondheim', country: 'Norway', km: 530 },
-  { name: 'Gothenburg', country: 'Sweden', km: 300 },
-  { name: 'Stockholm', country: 'Sweden', km: 560 },
-  { name: 'Copenhagen', country: 'Denmark', km: 600 },
-  { name: 'Hamburg', country: 'Germany', km: 900 },
-  { name: 'Berlin', country: 'Germany', km: 1050 },
-  { name: 'Amsterdam', country: 'Netherlands', km: 1230 },
-  { name: 'Rotterdam', country: 'Netherlands', km: 1250 },
-  { name: 'Rotterdam Port, Maasvlakte', country: 'Netherlands', km: 1290 },
-  { name: 'Antwerp', country: 'Belgium', km: 1330 },
-  { name: 'London', country: 'United Kingdom', km: 1500 },
+  { name: 'Oslo', country: 'Norway', km: 40, lat: 59.91, lon: 10.75 },
+  { name: 'Kongsberg', country: 'Norway', km: 40, lat: 59.67, lon: 9.65 },
+  { name: 'Kristiansand', country: 'Norway', km: 290, lat: 58.15, lon: 8.0 },
+  { name: 'Bergen', country: 'Norway', km: 460, lat: 60.39, lon: 5.32 },
+  { name: 'Stavanger', country: 'Norway', km: 520, lat: 58.97, lon: 5.73 },
+  { name: 'Trondheim', country: 'Norway', km: 530, lat: 63.43, lon: 10.4 },
+  { name: 'Gothenburg', country: 'Sweden', km: 300, lat: 57.71, lon: 11.97 },
+  { name: 'Stockholm', country: 'Sweden', km: 560, lat: 59.33, lon: 18.07 },
+  { name: 'Copenhagen', country: 'Denmark', km: 600, lat: 55.68, lon: 12.57 },
+  { name: 'Hamburg', country: 'Germany', km: 900, lat: 53.55, lon: 9.99 },
+  { name: 'Berlin', country: 'Germany', km: 1050, lat: 52.52, lon: 13.4 },
+  { name: 'Amsterdam', country: 'Netherlands', km: 1230, lat: 52.37, lon: 4.9 },
+  { name: 'Rotterdam', country: 'Netherlands', km: 1250, lat: 51.92, lon: 4.48 },
+  { name: 'Rotterdam Port, Maasvlakte', country: 'Netherlands', km: 1290, lat: 51.95, lon: 4.03 },
+  { name: 'Antwerp', country: 'Belgium', km: 1330, lat: 51.22, lon: 4.4 },
+  { name: 'London', country: 'United Kingdom', km: 1500, lat: 51.51, lon: -0.13 },
 ]
+
+// Places a driver can route through that are not sender destinations yet
+const EXTRA_PLACES = [
+  { name: 'Malmö', country: 'Sweden', lat: 55.6, lon: 13.0 },
+  { name: 'Brussels', country: 'Belgium', lat: 50.85, lon: 4.35 },
+  { name: 'Frankfurt', country: 'Germany', lat: 50.11, lon: 8.68 },
+  { name: 'Munich', country: 'Germany', lat: 48.14, lon: 11.58 },
+  { name: 'Paris', country: 'France', lat: 48.86, lon: 2.35 },
+  { name: 'Lyon', country: 'France', lat: 45.76, lon: 4.84 },
+  { name: 'Barcelona', country: 'Spain', lat: 41.39, lon: 2.17 },
+  { name: 'Madrid', country: 'Spain', lat: 40.42, lon: -3.7 },
+]
+const PLACES = [ORIGIN, ...CITIES, ...EXTRA_PLACES]
+
+// Coordinates by place name, for the route map and route matching
+export function placeOf(name) {
+  return PLACES.find((c) => c.name === name) || null
+}
+export const DRIVER_PLACES = PLACES
+  .filter((c) => !c.name.includes(','))
+  .map((c) => ({ id: c.name, label: c.name, hint: c.country }))
+  .sort((a, b) => a.label.localeCompare(b.label))
+export const DRIVER_COUNTRIES = [...new Set(PLACES.map((c) => c.country))].sort()
+
+// Rough road distance between two places
+function roadKm(a, b) {
+  const rad = Math.PI / 180
+  const h = Math.sin(((b.lat - a.lat) * rad) / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(((b.lon - a.lon) * rad) / 2) ** 2
+  return 2 * 6371 * Math.asin(Math.sqrt(h)) * 1.25
+}
 
 // Inside the EU / EEA a short description is enough, we make the papers.
 const EUROPE = ['Norway', 'Sweden', 'Denmark', 'Finland', 'Germany', 'Netherlands', 'Belgium', 'France', 'Poland', 'Spain', 'Italy']
@@ -111,6 +142,24 @@ const MOCK_PACKAGES = [
     pickupAddr: 'Kirkegata 3, 3611 Kongsberg', dropAddr: 'Karl Johans gate 22, 0159 Oslo',
     weight: 'Under 10 kg', note: 'Electronics — handle with care',
   },
+  {
+    id: 'pkg-5', from: 'Amsterdam', to: 'Copenhagen', what: '2 pallets', size: 'pallet', count: 2,
+    sender: 'Sanne D.', price: 6900, km: 780, pickup: null, status: 'available',
+    pickupAddr: 'Herengracht 120, 1015 Amsterdam', dropAddr: 'Vesterbrogade 40, 1620 Copenhagen',
+    weight: '100+ kg', note: '',
+  },
+  {
+    id: 'pkg-6', from: 'Paris', to: 'Berlin', what: '6 medium boxes', size: 'medium', count: 6,
+    sender: 'Luc M.', price: 5400, km: 1050, pickup: null, status: 'available',
+    pickupAddr: 'Rue de Rivoli 80, 75004 Paris', dropAddr: 'Torstraße 60, 10119 Berlin',
+    weight: '50-100 kg', note: 'Trade-fair materials',
+  },
+  {
+    id: 'pkg-7', from: 'Hamburg', to: 'Malmö', what: '1 large item', size: 'large', count: 1,
+    sender: 'Jonas W.', price: 3100, km: 480, pickup: null, status: 'available',
+    pickupAddr: 'Mönckebergstraße 7, 20095 Hamburg', dropAddr: 'Stortorget 2, 211 22 Malmö',
+    weight: '10-50 kg', note: '',
+  },
 ]
 
 const STORAGE_KEY = 'cargomates-v1'
@@ -136,6 +185,7 @@ function freshShipment() {
     bidsComplete: false,
     selectedBid: null,
     driverNote: '',
+    messages: [], // chat with the driver: { id, from: 'sender' | 'driver' | 'system', text, time }
     booking: null,
     payMethod: 'vipps',
   }
@@ -155,15 +205,18 @@ const saved = load()
 
 export const state = reactive({
   route: 'photos',
+  justPaid: false,
   mode: 'sender', // 'sender' | 'driver'
   shipment: { ...freshShipment(), ...(saved && saved.shipment ? saved.shipment : {}), photos: [] },
   history: (saved && saved.history) || seedHistory(),
   driverPackages: MOCK_PACKAGES.map(p => ({ ...p })),
   driverActive: null, // the package the driver is currently working on
+  // where the driver is going, and which countries they take jobs in (empty = all of Europe)
+  driverRoute: { from: '', to: '', countries: [], ...(saved && saved.driverRoute ? saved.driverRoute : {}) },
 })
 
 watch(
-  () => ({ shipment: { ...state.shipment, photos: [] }, history: state.history }),
+  () => ({ shipment: { ...state.shipment, photos: [] }, history: state.history, driverRoute: state.driverRoute }),
   (val) => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val)) } catch (e) { /* storage blocked, fine */ }
   },
@@ -185,7 +238,7 @@ function seedHistory() {
 
 const ROUTES = [
   'photos', 'details', 'customs', 'delivery', 'bidding', 'booked', 'onway', 'arrived', 'calendar', 'history',
-  'd-packages', 'd-package', 'd-pickup', 'd-tracking', 'd-dropoff',
+  'd-packages', 'd-package', 'd-pickup', 'd-tracking', 'd-dropoff', 'chat', 'd-chat',
 ]
 
 function readHash() {
@@ -406,10 +459,35 @@ export function confirmBid() {
     price: bid.price,
     note: s.driverNote || '',
   }
+  // The note written while accepting the offer opens the conversation
+  s.messages = []
+  if (s.booking.note) postMessage(s.messages, 'sender', s.booking.note)
   s.selectedBid = null
   s.driverNote = ''
   s.status = 'booked'
   go('booked')
+}
+
+// ---------------------------------------------------------------------------
+// Messages between sender and driver
+// ---------------------------------------------------------------------------
+
+export function postMessage(thread, from, text) {
+  thread.push({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+    from,
+    text,
+    time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+  })
+}
+
+// Driver side: each package has its own thread, opened by the sender's note on the package
+export function driverThread(pkg) {
+  if (!pkg.messages) {
+    pkg.messages = []
+    if (pkg.note) postMessage(pkg.messages, 'sender', pkg.note)
+  }
+  return pkg.messages
 }
 
 export function setStatus(status) {
@@ -444,11 +522,14 @@ export function pay() {
     abroad: isAbroad.value,
     code: s.booking.code,
   })
+  state.justPaid = true
+  go('history')
 }
 
 export function startNew() {
   if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
   Object.assign(state.shipment, freshShipment())
+  state.justPaid = false
   go('photos')
 }
 
@@ -490,6 +571,39 @@ export const PICKUP_LOCATIONS = [
   { id: 'sender', label: "Sender's door", hint: 'Collect at the pickup address' },
   { id: 'custom', label: 'Agreed meetup', hint: 'Arrange another spot with the sender' },
 ]
+
+// Available packages for the driver: inside the chosen countries, split by how well they fit the route.
+// Detour = extra km to drive via the package's pickup and drop-off instead of going straight.
+export const driverMatches = computed(() => {
+  const r = state.driverRoute
+  const a = placeOf(r.from)
+  const b = placeOf(r.to)
+  const inArea = (pkg) => {
+    if (!r.countries.length) return true
+    const p = placeOf(pkg.from)
+    const d = placeOf(pkg.to)
+    return !!p && !!d && r.countries.includes(p.country) && r.countries.includes(d.country)
+  }
+  const pool = state.driverPackages.filter((p) => p.status === 'available')
+  const available = pool.filter(inArea)
+  const hidden = pool.length - available.length
+  if (!a || !b || a === b) return { hasRoute: false, onRoute: [], offRoute: available.map((pkg) => ({ pkg, detour: null })), hidden }
+
+  const direct = roadKm(a, b)
+  const rows = available.map((pkg) => {
+    const p = placeOf(pkg.from)
+    const d = placeOf(pkg.to)
+    const extra = p && d ? roadKm(a, p) + roadKm(p, d) + roadKm(d, b) - direct : Infinity
+    return { pkg, detour: Math.max(0, Math.round(extra / 10) * 10) }
+  }).sort((x, y) => x.detour - y.detour)
+  const limit = Math.max(40, direct * 0.05)
+  return {
+    hasRoute: true,
+    onRoute: rows.filter((x) => x.detour <= limit),
+    offRoute: rows.filter((x) => x.detour > limit),
+    hidden,
+  }
+})
 
 export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
   const pkg = state.driverPackages.find(p => p.id === pkgId)

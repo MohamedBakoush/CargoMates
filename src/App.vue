@@ -16,6 +16,7 @@ import DriverPackage from './views/DriverPackage.vue'
 import DriverPickup from './views/DriverPickup.vue'
 import DriverTracking from './views/DriverTracking.vue'
 import DriverDropoff from './views/DriverDropoff.vue'
+import Chat from './views/Chat.vue'
 
 const VIEWS = {
   photos: Photos,
@@ -33,11 +34,13 @@ const VIEWS = {
   'd-pickup': DriverPickup,
   'd-tracking': DriverTracking,
   'd-dropoff': DriverDropoff,
+  chat: Chat,
+  'd-chat': Chat,
 }
 
 const view = computed(() => VIEWS[state.route] || Photos)
 </script>
 
 <template>
-  <component :is="view" />
+  <component :is="view" :key="state.route" />
 </template>

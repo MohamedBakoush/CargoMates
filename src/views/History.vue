@@ -3,10 +3,10 @@ import { ref, computed } from 'vue'
 import { state, go, fmtDay, kr, startNew, senderHome } from '../store.js'
 import Icon from '../components/Icon.vue'
 
-const expandedId = ref(null)
+const expandedId = ref(state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null)
 
 const orders = computed(() =>
-  [...state.history].sort((a, b) => (b.pickup || '').localeCompare(a.pickup || ''))
+  [...state.history].sort((a, b) => (state.justPaid ? b.id.localeCompare(a.id, undefined, { numeric: true }) : 0) || (b.pickup || '').localeCompare(a.pickup || ''))
 )
 
 function toggle(id) {
@@ -33,6 +33,7 @@ function statusClass(s) {
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go(senderHome())"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
+      <button class="role-tag" aria-label="Sender home" @click="go(senderHome())">Sender</button>
       <div class="spacer" />
       <button class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
     </header>
@@ -40,6 +41,10 @@ function statusClass(s) {
     <div class="body">
       <main class="main" style="flex: 1 1 100%">
         <div class="main-inner">
+          <div v-if="state.justPaid" class="paid-banner">
+            <span class="paid-ok"><Icon name="check" :size="22" :stroke="2.4" /></span>
+            <span><b>Paid. Thanks!</b><br>Your receipt is open below.</span>
+          </div>
           <h1 class="h1">Orders</h1>
 
           <div v-if="!orders.length" class="empty">
@@ -151,6 +156,9 @@ function statusClass(s) {
 </template>
 
 <style scoped>
+.paid-banner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius); background: #E8F5E9; font-size: 16px; line-height: 1.35; }
+.paid-ok { width: 40px; height: 40px; border-radius: 50%; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+
 .empty {
   padding: 40px 0;
   text-align: center;

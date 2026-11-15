@@ -69,7 +69,8 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
   <div class="page">
     <header class="topbar wrap">
       <button class="btn btn-round" aria-label="Back to your shipment" @click="go(senderHome())"><Icon name="back" /></button>
-      <div class="brand">Calendar</div>
+      <div class="brand keep">Calendar</div>
+      <button class="role-tag" aria-label="Sender home" @click="go(senderHome())">Sender</button>
       <div class="spacer" />
       <div class="month-nav">
         <button class="btn btn-round" aria-label="Previous month" @click="offset--"><Icon name="back" /></button>

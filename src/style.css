@@ -88,7 +88,7 @@ input.word { outline: none; }
 .sheet-title { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
 
 /* ---------- driver side ---------- */
-.role-tag { font-size: 13px; font-weight: 700; color: #fff; background: var(--navy); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+.role-tag { font-size: 13px; font-weight: 700; color: #fff; background: var(--navy); min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; white-space: nowrap; cursor: pointer; }
 .btn-driver { background: var(--navy); color: #fff; min-height: 56px; font-size: 17px; font-weight: 600; border-radius: 16px; border: 0; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
 .status-badge { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 .st-pending { background: #FFF3E0; color: #E65100; }
@@ -125,6 +125,8 @@ input.word { outline: none; }
   .topbar, .body, .actionbar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .topbar { min-height: 60px; padding-block: 6px; gap: 8px; }
   .brand { font-size: 18px; }
+  /* with a back button there is no room for the logo: the mode tag stays */
+  .btn-round + .brand:not(.keep) { display: none; }
   .btn-round { width: 44px; height: 44px; min-height: 44px; }
   .btn-pill { min-height: 44px; padding: 0 14px; }
   .btn-pill.collapse { width: 44px; padding: 0; }

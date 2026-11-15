@@ -7,6 +7,11 @@ import Icon from '../components/Icon.vue'
 const s = state.shipment
 const hasArrived = computed(() => s.booking && s.booking.arrived)
 const shared = ref(false)
+const lastMessage = computed(() => {
+  const m = s.messages[s.messages.length - 1]
+  if (!m) return 'No messages yet'
+  return (m.from === 'sender' ? 'You: ' : m.from === 'driver' ? s.booking.driver + ': ' : '') + m.text
+})
 
 function track() {
   if (s.status === 'booked') setStatus('onway')
@@ -52,15 +57,14 @@ async function share() {
         </div>
       </div>
 
-      <div v-if="s.booking.note" class="card note-card">
-        <div class="label">Your note to the driver</div>
-        <div class="note-text">{{ s.booking.note }}</div>
-      </div>
-
-      <div class="pair">
-        <a class="btn" href="sms:">Message driver</a>
-        <a class="btn" href="tel:">Call driver</a>
-      </div>
+      <button class="card chat-card" @click="go('chat')">
+        <span class="chat-main">
+          <span class="name">Messages with {{ s.booking.driver }}</span>
+          <span class="muted last">{{ lastMessage }}</span>
+        </span>
+        <span class="open">{{ s.messages.length ? 'Open' : 'Write' }}</span>
+      </button>
+      <p class="muted contact-note">The driver calls you if they need directions. You can ask for a call once they are close.</p>
       <div class="pair">
         <button class="btn" @click="go('calendar')"><Icon name="calendar" :size="20" />In your calendar</button>
         <button class="btn" @click="share">{{ shared ? 'Shared ✓' : 'Share with receiver' }}</button>
@@ -86,10 +90,13 @@ async function share() {
 .ok { width: 52px; height: 52px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex: none; }
 .name { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.contact-note { margin: -6px 0 0; font-size: 14px; }
 .pair .btn { min-height: 56px; padding: 0 12px; font-size: 16px; }
 
-.note-card { border-left: 3px solid var(--accent); }
-.note-text { font-size: 17px; margin-top: 4px; font-style: italic; }
+.chat-card { width: 100%; border: 0; text-align: left; display: flex; align-items: center; gap: 12px; min-height: 72px; }
+.chat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.last { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.open { font-size: 16px; font-weight: 600; text-decoration: underline; }
 
 .timeline { display: flex; flex-direction: column; padding: 20px; }
 .tl-row { display: flex; align-items: flex-start; gap: 14px; }

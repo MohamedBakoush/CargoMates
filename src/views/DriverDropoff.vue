@@ -28,7 +28,7 @@ function confirm() {
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-package')"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
-      <div class="role-tag">Drop-off</div>
+      <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
     </header>
 

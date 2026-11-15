@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { state, go, kr, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS } from '../store.js'
 import Icon from '../components/Icon.vue'
+import RouteMap from '../components/RouteMap.vue'
 
 const pkg = computed(() => state.driverActive)
 const bidAmount = ref('')
@@ -23,7 +24,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-packages')"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
-      <div class="role-tag">Driver</div>
+      <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
     </header>
 
@@ -36,6 +37,8 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
             <p class="detail-what">{{ pkg.what }} · {{ pkg.weight }}</p>
           </div>
         </div>
+
+        <RouteMap :from="pkg.from" :to="pkg.to" :progress="pkg.status === 'picked-up' ? 40 : pkg.status === 'delivered' ? 100 : null" />
 
         <div class="detail-grid">
           <div class="detail-cell">
@@ -54,6 +57,11 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
             <span class="detail-label">Sender</span>
             <span class="detail-value">{{ pkg.sender }}</span>
           </div>
+        </div>
+
+        <div v-if="canPickup || canDropoff" class="contact-row">
+          <button class="btn" @click="go('d-chat')">Message {{ pkg.sender }}</button>
+          <a class="btn" href="tel:"><Icon name="phone" :size="18" />Call {{ pkg.sender }}</a>
         </div>
 
         <div v-if="pkg.note" class="note-bar">
@@ -169,6 +177,8 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 .detail-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .detail-value { font-size: 15px; display: flex; align-items: center; gap: 6px; }
 
+.contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.contact-row .btn { min-height: 52px; padding: 0 10px; font-size: 15px; }
 .note-bar { background: #FFF8E1; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 12px 12px 0; font-size: 15px; }
 
 .bid-panel { display: flex; flex-direction: column; gap: 14px; }
