@@ -48,19 +48,26 @@ export const KINDS = [
   { id: 'own', label: 'my own things', hint: 'Moving or storing your own goods' },
 ]
 
+// Pickup is always at the sender's door. They only choose a half-day slot.
+export const PICKUP_SLOTS = [
+  { id: 'am', label: 'Morning', hint: '08:00 to 12:00' },
+  { id: 'pm', label: 'Afternoon', hint: '12:00 to 17:00' },
+]
+
+// How the goods reach the receiver.
 export const DELIVERY = [
-  { id: 'door', title: 'Pickup at your door', hint: 'We come to you — no drop-off needed', factor: 1.15, trucks: 2, tag: 'Most popular' },
-  { id: 'hub', title: 'I drop it at a hub', hint: 'At a hub within 60 km', factor: 0.8, trucks: 6, tag: 'Cheapest' },
-  { id: 'lastmile', title: 'Hub + last-mile van', hint: 'Truck to a hub, we send a local van to the door', factor: 0.95, trucks: 6 },
+  { id: 'door', title: 'To the door', hint: 'Delivered to the exact address', factor: 1.15, trucks: 2 },
+  { id: 'hub', title: 'Receiver collects at a hub', hint: 'A hub within 60 km of the address', factor: 0.8, trucks: 6, tag: 'Cheapest' },
+  { id: 'lastmile', title: 'Hub, then a local van', hint: 'Truck to a hub, local van to the door', factor: 0.95, trucks: 6 },
 ]
 
 export const GUARANTEES = [
-  { id: 'date', icon: 'calendar', title: 'Guaranteed delivery date', desc: 'We promise a date. If we miss it, you get compensation.' },
-  { id: 'late', icon: 'clock', title: '€40 back if we\'re late', desc: 'Automatic payout to you if delivery is even one day late.' },
-  { id: 'replace', icon: 'refresh', title: 'Replacement truck in 48h', desc: 'If the carrier can\'t make it, we find another one within 48 hours.' },
-  { id: 'noshow', icon: 'shield', title: 'Full refund + €25 for no-show', desc: 'If nobody picks up your goods, full refund plus €25 credit.' },
-  { id: 'contact', icon: 'headphones', title: 'One contact for everything', desc: 'Damage, loss, delays — one person handles it all, not you.' },
-  { id: 'window', icon: 'door', title: 'Half-day pickup slot', desc: 'Morning or afternoon — we don\'t waste your whole day.' },
+  { id: 'date', icon: 'calendar', title: 'Guaranteed delivery date', desc: 'Every offer comes with a date we commit to.' },
+  { id: 'late', icon: 'clock', title: 'kr 450 back if we are late', desc: 'Paid automatically if delivery is even one day late.' },
+  { id: 'replace', icon: 'refresh', title: 'Replacement truck in 48 hours', desc: 'If the carrier cannot make it, we find another one.' },
+  { id: 'noshow', icon: 'shield', title: 'Full refund + kr 300 for a no-show', desc: 'If nobody picks up your goods, you get everything back plus credit.' },
+  { id: 'contact', icon: 'headphones', title: 'One contact for everything', desc: 'Damage, loss or delay: one person at CargoMates handles it.' },
+  { id: 'window', icon: 'door', title: 'Half-day pickup slot', desc: 'Morning or afternoon, so you do not wait in all day.' },
 ]
 
 const DRIVERS = [
@@ -122,6 +129,7 @@ function freshShipment() {
     value: '',
     kind: 'sale',
     fakturaName: '',
+    pickupSlot: 'am',
     delivery: 'door',
     status: 'draft', // draft | bidding | booked | onway | arrived | paid
     bids: [],        // { driver, price, eta, time }
@@ -203,6 +211,11 @@ export const needsFaktura = computed(() => isAbroad.value && !EUROPE.includes(st
 export const sizeObj = computed(() => SIZES.find((s) => s.id === state.shipment.size))
 export const arrivalObj = computed(() => ARRIVALS.find((a) => a.id === state.shipment.arrival))
 export const kindObj = computed(() => KINDS.find((k) => k.id === state.shipment.kind))
+export const slotObj = computed(() => PICKUP_SLOTS.find((o) => o.id === state.shipment.pickupSlot) || PICKUP_SLOTS[0])
+export function slotText(id) {
+  const o = PICKUP_SLOTS.find((x) => x.id === id) || PICKUP_SLOTS[0]
+  return `${o.label.toLowerCase()} (${o.hint})`
+}
 export const deliveryObj = computed(() => DELIVERY.find((o) => o.id === state.shipment.delivery))
 
 export const packageLabel = computed(() => {
@@ -242,10 +255,10 @@ export const steps = computed(() => {
   ]
   if (isAbroad.value) list.push({ key: 'customs', label: 'Customs', summary: s.contents ? `${s.contents}, ${kindObj.value.label}` : '' })
   list.push(
-    { key: 'delivery', label: 'How close', summary: deliveryObj.value.title },
-    { key: 'bidding', label: 'Finding drivers', summary: s.status === 'bidding' ? `${s.bids.length} bid${s.bids.length !== 1 ? 's' : ''}` : s.bids.length ? 'Done' : '' },
+    { key: 'delivery', label: 'Pickup and delivery', summary: `${slotObj.value.label} pickup · ${deliveryObj.value.title}` },
+    { key: 'bidding', label: 'Offers', summary: s.status === 'bidding' ? `${s.bids.length} offer${s.bids.length !== 1 ? 's' : ''}` : s.bids.length ? 'Done' : '' },
     { key: 'booked', label: 'Booked', summary: b ? b.driver : '' },
-    { key: 'onway', label: 'On the way', summary: b ? `Picked up ${fmtDay(b.pickup)}` : '' },
+    { key: 'onway', label: 'On the way', summary: b ? `Arrives ${fmtDay(b.arrive)}` : '' },
     { key: 'arrived', label: 'Arrived, pay', summary: s.status === 'paid' ? 'Paid' : '' }
   )
 
@@ -338,14 +351,15 @@ function startBidding() {
     const variance = 0.85 + Math.random() * 0.3
     const bidPrice = Math.round(basePrice * variance / 10) * 10
     const km = s.to ? s.to.km : 300
-    const lead = s.arrival === 'asap' ? 1 : s.arrival === 'week' ? 3 : 6
-    const etaDays = lead + Math.floor(Math.random() * 2)
+    const lead = s.arrival === 'asap' ? 1 : s.arrival === 'week' ? 2 : 5
+    const pickupDate = addDays(new Date(), lead + Math.floor(Math.random() * 2))
+    const deliverBy = addDays(pickupDate, Math.max(1, Math.ceil(km / 600)))
     s.bids.push({
       id: 'bid-' + Date.now() + '-' + i,
       driver,
       price: bidPrice,
-      etaDays,
-      time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+      pickupDate,
+      deliverBy,
     })
     i++
     if (i < count && s.status === 'bidding') {
@@ -356,6 +370,15 @@ function startBidding() {
   }
 
   bidTimer = setTimeout(nextBid, 1500 + Math.random() * 2000)
+}
+
+export function cancelBidding() {
+  if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
+  const s = state.shipment
+  s.status = 'draft'
+  s.bids = []
+  s.selectedBid = null
+  go('delivery')
 }
 
 export function selectBid(bid) {
@@ -372,16 +395,12 @@ export function confirmBid() {
   const bid = s.selectedBid
   if (!bid) return
   if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
-  const km = s.to ? s.to.km : 300
-  const today = new Date().toISOString().slice(0, 10)
-  const travel = Math.max(1, Math.ceil(km / 600))
-  const arrive = addDays(new Date(), travel)
   s.booking = {
     driver: bid.driver.name,
-    pickup: today,
-    arrive,
+    pickup: bid.pickupDate,
+    arrive: bid.deliverBy,
     arrived: false,
-    window: 'Today',
+    slot: s.pickupSlot,
     hub: s.delivery === 'door' ? null : `CargoMates hub ${s.to ? s.to.name : ''}`,
     code: String(Math.floor(1000 + Math.random() * 9000)),
     price: bid.price,
@@ -446,12 +465,17 @@ export function fmtDay(iso) {
 // Driver-side actions
 // ---------------------------------------------------------------------------
 
+export function senderHome() {
+  const st = state.shipment.status
+  return st === 'draft' ? 'photos' : st === 'paid' ? 'arrived' : st
+}
+
 export function switchMode(mode) {
   state.mode = mode
   if (mode === 'driver') {
     go('d-packages')
   } else {
-    go(state.shipment.status === 'draft' ? 'photos' : state.shipment.status)
+    go(senderHome())
   }
 }
 
@@ -463,9 +487,8 @@ export const PICKUP_TIMES = [
 ]
 
 export const PICKUP_LOCATIONS = [
-  { id: 'sender', label: 'Sender address', hint: 'Go to the pickup address listed' },
-  { id: 'hub', label: 'Nearest hub', hint: 'Sender drops it off at a CargoMates hub' },
-  { id: 'custom', label: 'Custom meetup', hint: 'Agree on a location with the sender' },
+  { id: 'sender', label: "Sender's door", hint: 'Collect at the pickup address' },
+  { id: 'custom', label: 'Agreed meetup', hint: 'Arrange another spot with the sender' },
 ]
 
 export function driverBid(pkgId, amount, pickupTime, pickupLocation) {

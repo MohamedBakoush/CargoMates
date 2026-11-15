@@ -5,14 +5,12 @@ import Icon from '../components/Icon.vue'
 
 const pkg = computed(() => state.driverActive)
 const bidAmount = ref('')
-const bidSending = ref(false)
 const pickupTime = ref('today')
 const pickupLocation = ref('sender')
 
 function placeBid() {
   if (!pkg.value) return
   const amount = parseInt(bidAmount.value) || pkg.value.price
-  bidSending.value = true
   driverBid(pkg.value.id, amount, pickupTime.value, pickupLocation.value)
 }
 
@@ -29,7 +27,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
       <div class="spacer" />
     </header>
 
-    <div class="body pkg-body">
+    <div class="body col">
       <div class="detail-card">
         <div class="detail-header">
           <div class="pkg-icon-lg"><Icon name="package" :size="36" /></div>
@@ -70,7 +68,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 
         <div class="bid-row">
           <label class="bid-label">Your price (kr)</label>
-          <input v-model="bidAmount" type="number" class="bid-input" :placeholder="String(pkg.price)" />
+          <input v-model="bidAmount" type="number" inputmode="numeric" class="bid-input" :placeholder="String(pkg.price)" />
         </div>
 
         <div class="bid-row">
@@ -87,7 +85,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 
         <div class="bid-row">
           <label class="bid-label">Where do you pick up?</label>
-          <div class="option-grid cols-3">
+          <div class="option-grid">
             <button v-for="l in PICKUP_LOCATIONS" :key="l.id"
                     class="opt-card" :class="{ selected: pickupLocation === l.id }"
                     @click="pickupLocation = l.id">
@@ -117,7 +115,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
       <div v-else-if="canPickup" class="status-panel card accepted-panel">
         <div class="check-circle"><Icon name="check" :size="28" /></div>
         <h2>Accepted!</h2>
-        <p class="muted">Go to {{ pkg.estPickupLocation === 'sender' ? pkg.pickupAddr : (pkg.estPickupLocation === 'hub' ? 'the nearest CargoMates hub' : 'the agreed meetup point') }} and confirm pickup.</p>
+        <p class="muted">Go to {{ pkg.estPickupLocation === 'sender' ? pkg.pickupAddr : 'the agreed meetup point' }} and confirm pickup.</p>
         <div class="est-summary">
           <span class="est-chip"><Icon name="calendar" :size="14" /> {{ pkg.estPickupLabel }}</span>
           <span class="est-chip"><Icon name="pin" :size="14" /> {{ pkg.estLocationLabel }}</span>
@@ -159,13 +157,11 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 </template>
 
 <style scoped>
-.role-tag { font-size: 14px; font-weight: 700; color: #fff; background: var(--navy); padding: 4px 12px; border-radius: 999px; }
-.pkg-body { flex-direction: column; gap: 20px; padding: 8px 24px 40px; }
 
-.detail-card { background: var(--card); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 20px; max-width: 700px; }
+.detail-card { background: var(--card); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .detail-header { display: flex; gap: 16px; align-items: center; }
-.pkg-icon-lg { width: 64px; height: 64px; border-radius: 20px; background: var(--soft); display: flex; align-items: center; justify-content: center; flex: none; color: var(--navy); }
-.detail-route { font-size: 24px; font-weight: 600; margin: 0; }
+.pkg-icon-lg { width: 52px; height: 52px; border-radius: 20px; background: var(--soft); display: flex; align-items: center; justify-content: center; flex: none; color: var(--navy); }
+.detail-route { font-size: 22px; font-weight: 600; margin: 0; }
 .detail-what { font-size: 17px; color: var(--muted); margin: 4px 0 0; }
 
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -175,17 +171,15 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 
 .note-bar { background: #FFF8E1; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 12px 12px 0; font-size: 15px; }
 
-.bid-panel { max-width: 700px; display: flex; flex-direction: column; gap: 14px; }
+.bid-panel { display: flex; flex-direction: column; gap: 14px; }
 .bid-title { font-size: 20px; font-weight: 600; margin: 0; }
 .bid-row { display: flex; flex-direction: column; gap: 6px; }
 .bid-label { font-size: 14px; font-weight: 600; color: var(--muted); }
-.bid-input { padding: 14px 18px; border: 1.5px solid var(--line); border-radius: 14px; font-size: 20px; font-weight: 600; background: var(--card); }
+.bid-input { width: 100%; padding: 14px 18px; border: 1.5px solid var(--line); border-radius: 14px; font-size: 20px; font-weight: 600; background: var(--card); }
 .bid-input:focus { border-color: var(--navy); outline: none; }
 
-.btn-driver { background: var(--navy); border-color: var(--navy); color: #fff; min-height: 56px; font-size: 17px; font-weight: 600; border-radius: 16px; border: 0; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
 
 .option-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
 .opt-card { border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
 .opt-card:hover { border-color: var(--navy); }
 .opt-card.selected { border: 2.5px solid var(--navy); background: #F0F4FA; }
@@ -195,11 +189,9 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 .est-summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .est-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 500; background: var(--soft); padding: 6px 12px; border-radius: 999px; color: var(--navy); }
 
-.status-panel { max-width: 700px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; text-align: center; }
+.status-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; text-align: center; }
 .status-panel h2 { margin: 0; font-size: 22px; }
 
-.pulse-ring { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--accent); animation: pulse-driver 1.5s ease-in-out infinite; }
-@keyframes pulse-driver { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } }
 
 .check-circle { width: 56px; height: 56px; border-radius: 50%; background: #E8F0FF; color: #1565C0; display: flex; align-items: center; justify-content: center; }
 .transit-circle { background: #E0F2F1; color: #00695C; }

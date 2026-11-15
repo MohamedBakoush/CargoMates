@@ -48,32 +48,28 @@ const totalVol = computed(() => {
 
 <template>
   <PageLayout>
-    <div v-if="!s.photos.length" class="hero-banner">
-      <h1 class="hero-title">Ship anything, anywhere.<br/>We pick up at your door.</h1>
-      <div class="hero-pills">
-        <span class="hero-pill"><Icon name="door" :size="16" :stroke="2" /> Pickup at your door</span>
-        <span class="hero-pill"><Icon name="calendar" :size="16" :stroke="2" /> Guaranteed delivery date</span>
-        <span class="hero-pill"><Icon name="shield" :size="16" :stroke="2" /> Full protection included</span>
-      </div>
-    </div>
-    <h1 v-else class="h1">What are you sending?</h1>
-    <p class="sub">Add a photo of each package. We analyse it to estimate the size.</p>
+    <template v-if="!s.photos.length">
+      <h1 class="h1">Send anything. We pick it up at your door.</h1>
+      <p class="sub">Start with a photo of each package and we estimate the size.</p>
 
-    <div v-if="!s.photos.length" class="tiles">
-      <button class="tile" @click="camera.click()">
-        <span class="circle"><Icon name="camera" :size="42" :stroke="1.6" /></span>
-        <span class="tile-title">Take a photo</span>
-        <span class="muted">Opens the camera</span>
-      </button>
-      <button class="tile dashed" :class="{ over: dragging }" @click="picker.click()"
+      <button class="tile" :class="{ over: dragging }" @click="camera.click()"
               @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="onDrop">
-        <span class="circle"><Icon name="upload" :size="42" :stroke="1.6" /></span>
-        <span class="tile-title">Choose photos</span>
-        <span class="muted">Or drag them here on a computer</span>
+        <span class="circle"><Icon name="camera" :size="36" :stroke="1.6" /></span>
+        <span class="tile-title">Take a photo</span>
+        <span class="muted">One package per photo, whole box in view</span>
       </button>
-    </div>
+      <div class="alt-row">
+        <button class="alt" @click="picker.click()">Choose from library</button>
+        <button class="alt" @click="noPhoto">No photo, describe it</button>
+      </div>
+
+      <Guarantees />
+    </template>
 
     <template v-else>
+      <h1 class="h1">What are you sending?</h1>
+      <p class="sub">Check our estimate for each box and correct it if needed.</p>
+
       <div class="box-list">
         <div v-for="(p, i) in s.photos" :key="p.id" class="box-row card">
           <div class="box-header">
@@ -88,17 +84,17 @@ const totalVol = computed(() => {
           <div class="dims-row">
             <div class="dim-field">
               <label class="dim-label">L (cm)</label>
-              <input v-model="p.length" type="number" class="dim-input" placeholder="0" />
+              <input v-model="p.length" type="number" inputmode="numeric" class="dim-input" placeholder="0" />
             </div>
             <span class="dim-x">×</span>
             <div class="dim-field">
               <label class="dim-label">W (cm)</label>
-              <input v-model="p.width" type="number" class="dim-input" placeholder="0" />
+              <input v-model="p.width" type="number" inputmode="numeric" class="dim-input" placeholder="0" />
             </div>
             <span class="dim-x">×</span>
             <div class="dim-field">
               <label class="dim-label">H (cm)</label>
-              <input v-model="p.height" type="number" class="dim-input" placeholder="0" />
+              <input v-model="p.height" type="number" inputmode="numeric" class="dim-input" placeholder="0" />
             </div>
             <div class="dim-field weight-field">
               <label class="dim-label">kg</label>
@@ -126,31 +122,23 @@ const totalVol = computed(() => {
       </div>
     </template>
 
-    <div class="chips">
-      <span class="chip">One package per photo</span>
-      <span class="chip">Show the whole box</span>
-    </div>
-
-    <Guarantees v-if="!s.photos.length" />
-
     <input ref="camera" type="file" accept="image/*" capture="environment" hidden @change="onFiles">
     <input ref="picker" type="file" accept="image/*" multiple hidden @change="onFiles">
 
     <template #actions>
       <div class="info"><span class="small">Nothing to pay now. You pay when it arrives.</span></div>
-      <button class="btn" @click="noPhoto">No photo, describe it</button>
       <button class="btn btn-primary" :disabled="!s.photos.length" @click="go('details')">Continue</button>
     </template>
   </PageLayout>
 </template>
 
 <style scoped>
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-.tile { min-height: 280px; border: 0; border-radius: 28px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font-size: 16px; }
-.tile.dashed { border: 2px dashed var(--line-strong); }
+.tile { min-height: 220px; border: 2px dashed var(--line-strong); border-radius: 28px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 15px; padding: 20px; }
 .tile.over { border-color: var(--accent); background: #FFF7EF; }
-.circle { width: 88px; height: 88px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; }
+.circle { width: 76px; height: 76px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; }
 .tile-title { font-size: 22px; font-weight: 600; }
+.alt-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 24px; }
+.alt { min-height: 44px; border: 0; background: none; font-size: 16px; font-weight: 600; color: var(--navy); text-decoration: underline; }
 
 .box-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -165,7 +153,7 @@ const totalVol = computed(() => {
 .dims-row { display: flex; align-items: flex-end; gap: 6px; }
 .dim-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .dim-label { font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; }
-.dim-input { padding: 10px 6px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 18px; font-weight: 600; background: var(--bg); text-align: center; width: 100%; }
+.dim-input { min-height: 48px; padding: 10px 4px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 18px; font-weight: 600; background: var(--bg); text-align: center; width: 100%; }
 .dim-input:focus { border-color: var(--navy); outline: none; }
 .dim-x { font-size: 18px; color: var(--muted); padding-bottom: 12px; flex: none; }
 .weight-field { flex: 1.1; }
@@ -182,15 +170,8 @@ const totalVol = computed(() => {
 .found-row { display: flex; flex-direction: column; gap: 4px; }
 .found-text { font-size: 22px; font-weight: 600; }
 
-.hero-banner { text-align: center; padding: 8px 0 4px; }
-.hero-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 16px; }
-.hero-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.hero-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--navy); background: #EEF2FA; padding: 6px 14px; border-radius: 999px; white-space: nowrap; }
-
 @media (max-width: 500px) {
-  .dims-row { flex-wrap: wrap; }
   .dim-x { display: none; }
-  .dim-field { flex-basis: 40%; }
-  .hero-title { font-size: 24px; }
+  .tile { min-height: 180px; }
 }
 </style>

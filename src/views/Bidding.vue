@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import { state, go, kr, selectBid, cancelSelection, confirmBid } from '../store.js'
+import { state, kr, fmtDay, slotText, selectBid, cancelSelection, confirmBid, cancelBidding } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
+import Guarantees from '../components/Guarantees.vue'
 
 const s = state.shipment
 const sortedBids = computed(() => [...s.bids].sort((a, b) => a.price - b.price))
@@ -11,17 +12,9 @@ const selected = computed(() => s.selectedBid)
 </script>
 
 <template>
-  <PageLayout back="delivery">
-    <h1 class="h1">Drivers are bidding on your shipment</h1>
-    <p class="sub">Sit tight — drivers on your route are reviewing and placing bids. You pick the one you like.</p>
-
-    <div class="promise-strip">
-      <span class="promise-item">Guaranteed delivery date</span>
-      <span class="promise-dot">·</span>
-      <span class="promise-item">€40 back if late</span>
-      <span class="promise-dot">·</span>
-      <span class="promise-item">Full refund for no-show</span>
-    </div>
+  <PageLayout>
+    <h1 class="h1">Offers for your shipment</h1>
+    <p class="sub">Drivers on your route are bidding. Tap the offer you like.</p>
 
     <div v-if="stillWaiting && !hasBids" class="searching">
       <div class="pulse-ring" />
@@ -29,241 +22,83 @@ const selected = computed(() => s.selectedBid)
     </div>
 
     <TransitionGroup name="bid" tag="div" class="bids">
-      <button
-        v-for="bid in sortedBids"
-        :key="bid.id"
-        class="bid-card"
-        :class="{ selected: selected && selected.id === bid.id }"
-        @click="selectBid(bid)"
-      >
-        <span class="bid-avatar">{{ bid.driver.avatar }}</span>
-        <span class="bid-info">
-          <span class="bid-name">{{ bid.driver.name }}</span>
-          <span class="bid-meta">
-            <span class="bid-stars">★ {{ bid.driver.rating }}</span>
-            <span class="bid-trips">· {{ bid.driver.trips }} trips</span>
+      <button v-for="bid in sortedBids" :key="bid.id" class="bid-card" @click="selectBid(bid)">
+        <span class="bid-top">
+          <span class="bid-avatar">{{ bid.driver.avatar }}</span>
+          <span class="bid-info">
+            <span class="bid-name">{{ bid.driver.name }}</span>
+            <span class="bid-meta"><span class="bid-stars">★ {{ bid.driver.rating }}</span> · {{ bid.driver.trips }} trips</span>
           </span>
-          <span class="bid-eta">Picks up in {{ bid.etaDays }} day{{ bid.etaDays !== 1 ? 's' : '' }}</span>
-        </span>
-        <span class="bid-price-col">
           <span class="bid-price">{{ kr(bid.price) }}</span>
-          <span class="bid-time">{{ bid.time }}</span>
+        </span>
+        <span class="bid-dates">
+          <span>Pickup <b>{{ fmtDay(bid.pickupDate) }}</b></span>
+          <span>Delivered by <b>{{ fmtDay(bid.deliverBy) }}</b></span>
         </span>
       </button>
     </TransitionGroup>
 
     <p v-if="stillWaiting && hasBids" class="waiting-more">
-      <span class="dot-pulse" /> Waiting for more bids…
+      <span class="dot-pulse" /> Waiting for more offers…
     </p>
 
-    <!-- Note to driver panel -->
-    <Transition name="note">
-      <div v-if="selected" class="note-panel">
-        <div class="note-header">
-          <span class="note-title">Send {{ selected.driver.name }} a note</span>
-          <button class="btn-ghost" @click="cancelSelection">Cancel</button>
+    <Guarantees v-if="hasBids" compact />
+
+    <Teleport to="body">
+      <div v-if="selected" class="sheet-backdrop" @click.self="cancelSelection">
+        <div class="sheet" role="dialog" aria-label="Accept this offer">
+          <div class="sheet-handle" />
+          <p class="sheet-title">{{ selected.driver.name }} · {{ kr(selected.price) }}</p>
+          <div class="sum">
+            <div>Pickup <b>{{ fmtDay(selected.pickupDate) }}</b>, {{ slotText(s.pickupSlot) }}</div>
+            <div>Guaranteed delivery by <b>{{ fmtDay(selected.deliverBy) }}</b></div>
+          </div>
+          <textarea v-model="s.driverNote" class="note-input" rows="2"
+                    placeholder="Note to the driver (optional), e.g. ring the bell, 3rd floor" />
+          <button class="btn btn-primary" @click="confirmBid">Accept {{ kr(selected.price) }}</button>
+          <button class="btn-ghost" @click="cancelSelection">Back to offers</button>
         </div>
-        <textarea
-          v-model="s.driverNote"
-          class="note-input"
-          placeholder="e.g. Ring the doorbell, it's on the 3rd floor. Handle with care."
-          rows="3"
-        />
-        <button class="btn btn-primary note-confirm" @click="confirmBid">
-          Accept {{ kr(selected.price) }} · {{ selected.driver.name }}
-        </button>
       </div>
-    </Transition>
+    </Teleport>
 
     <template #actions>
       <div class="info">
-        <span class="big">{{ hasBids ? sortedBids.length + ' bid' + (sortedBids.length !== 1 ? 's' : '') : 'Searching…' }}</span>
-        <span class="small">{{ selected ? 'Add a note and confirm' : 'Tap a bid to accept it' }}</span>
+        <span class="big">{{ hasBids ? sortedBids.length + ' offer' + (sortedBids.length !== 1 ? 's' : '') : 'Searching…' }}</span>
+        <span class="small">{{ hasBids ? 'Lowest price first' : 'This usually takes a few seconds' }}</span>
       </div>
-      <button class="btn" @click="go('delivery')">Cancel</button>
+      <button class="btn" @click="cancelBidding">Change details</button>
     </template>
   </PageLayout>
 </template>
 
 <style scoped>
-.searching {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 40px 0;
-}
-.pulse-ring {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 3px solid var(--accent);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(0.9); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 1; }
-}
-.search-text {
-  font-size: 18px;
-  color: var(--muted);
-  text-align: center;
-}
+.searching { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 32px 0; }
+.search-text { font-size: 17px; color: var(--muted); text-align: center; margin: 0; }
 
-.bids {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.bid-card {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 22px;
-  background: var(--card);
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  text-align: left;
-  transition: border-color 0.15s;
-}
-.bid-card:hover, .bid-card:focus-visible {
-  border-color: var(--navy);
-}
-.bid-card.selected {
-  border: 2.5px solid var(--navy);
-  padding: 17px 21px;
-}
-.bid-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #EDE7DD;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 20px;
-  flex: none;
-}
-.bid-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.bid-name {
-  font-size: 19px;
-  font-weight: 600;
-}
-.bid-meta {
-  font-size: 15px;
-  color: var(--muted);
-  display: flex;
-  gap: 4px;
-}
+.bids { display: flex; flex-direction: column; gap: 12px; }
+.bid-card { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); text-align: left; }
+.bid-card:hover, .bid-card:focus-visible { border-color: var(--navy); }
+.bid-top { display: flex; align-items: center; gap: 12px; }
+.bid-avatar { width: 44px; height: 44px; border-radius: 50%; background: #EDE7DD; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex: none; }
+.bid-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bid-name { font-size: 18px; font-weight: 600; }
+.bid-meta { font-size: 14px; color: var(--muted); }
 .bid-stars { color: var(--accent); font-weight: 600; }
-.bid-eta {
-  font-size: 15px;
-  color: var(--muted);
-}
-.bid-price-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex: none;
-}
-.bid-price {
-  font-size: 22px;
-  font-weight: 700;
-}
-.bid-time {
-  font-size: 14px;
-  color: var(--muted);
-}
+.bid-price { font-size: 21px; font-weight: 700; white-space: nowrap; }
+.bid-dates { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 15px; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
+.bid-dates b { color: var(--ink); font-weight: 600; }
 
-.waiting-more {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 16px;
-  color: var(--muted);
-  padding: 8px 0;
-}
-.dot-pulse {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 1.6s ease-in-out infinite;
-  flex: none;
-}
+.waiting-more { display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--muted); margin: 0; }
+.dot-pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s ease-in-out infinite; flex: none; }
 
-/* Note panel */
-.note-panel {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  border: 2px solid var(--navy);
-}
-.note-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.note-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-.note-input {
-  width: 100%;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
-  font: inherit;
-  font-size: 17px;
-  resize: vertical;
-  background: var(--bg);
-  color: var(--ink);
-}
-.note-input:focus {
-  outline: none;
-  border-color: var(--navy);
-}
-.note-input::placeholder {
-  color: var(--muted);
-}
-.note-confirm {
-  min-width: 0;
-  width: 100%;
-}
+.sum { display: flex; flex-direction: column; gap: 4px; font-size: 16px; }
+.note-input { width: 100%; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; font: inherit; font-size: 16px; resize: vertical; background: var(--card); color: var(--ink); }
+.note-input:focus { outline: none; border-color: var(--navy); }
+.note-input::placeholder { color: var(--muted); }
 
-.promise-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 12px 16px;
-  background: #EEF2FA;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--navy);
-}
-.promise-dot { color: var(--muted); }
-
-/* transitions */
 .bid-enter-active { animation: slide-in 0.35s ease-out; }
 @keyframes slide-in {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.note-enter-active { animation: slide-in 0.25s ease-out; }
-.note-leave-active { animation: slide-in 0.2s ease-in reverse; }
 </style>

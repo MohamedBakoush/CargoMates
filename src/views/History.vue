@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, kr, startNew } from '../store.js'
+import { state, go, fmtDay, kr, startNew, senderHome } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const expandedId = ref(null)
@@ -31,17 +31,16 @@ function statusClass(s) {
 <template>
   <div class="page">
     <header class="topbar">
-      <button class="btn btn-round" aria-label="Back" @click="go('calendar')"><Icon name="back" /></button>
+      <button class="btn btn-round" aria-label="Back" @click="go(senderHome())"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
       <div class="spacer" />
-      <button class="btn btn-pill" @click="go('calendar')"><Icon name="calendar" :size="20" />Calendar</button>
+      <button class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
     </header>
 
     <div class="body">
       <main class="main" style="flex: 1 1 100%">
         <div class="main-inner">
-          <h1 class="h1">Order history</h1>
-          <p class="sub">All your shipments in one place. Tap to see the full receipt.</p>
+          <h1 class="h1">Orders</h1>
 
           <div v-if="!orders.length" class="empty">
             <p class="muted">No orders yet. Start your first shipment!</p>
@@ -49,14 +48,9 @@ function statusClass(s) {
 
           <div v-for="order in orders" :key="order.id" class="receipt" :class="{ open: expandedId === order.id }">
             <button class="receipt-header" @click="toggle(order.id)">
-              <div class="receipt-route">
-                <span class="receipt-from">{{ order.from || 'Drammen' }}</span>
-                <span class="receipt-arrow">→</span>
-                <span class="receipt-to">{{ order.to || order.title }}</span>
-              </div>
-              <div class="receipt-summary">
-                <span class="receipt-what">{{ order.what }}</span>
-                <span class="receipt-date">{{ fmtDay(order.pickup) }}</span>
+              <div class="receipt-main">
+                <span class="receipt-route">{{ order.from || 'Drammen' }} → {{ order.to || order.title }}</span>
+                <span class="receipt-what">{{ order.what }} · {{ fmtDay(order.pickup) }}</span>
               </div>
               <div class="receipt-right">
                 <span class="receipt-price">{{ kr(order.price || 0) }}</span>
@@ -92,11 +86,11 @@ function statusClass(s) {
                     <span class="val">{{ order.driver || '—' }}</span>
                   </div>
                   <div class="receipt-cell">
-                    <span class="label">Picked up</span>
+                    <span class="label">Pickup</span>
                     <span class="val">{{ fmtDay(order.pickup) }}</span>
                   </div>
                   <div class="receipt-cell">
-                    <span class="label">{{ order.status === 'paid' ? 'Arrived' : 'Est. arrival' }}</span>
+                    <span class="label">{{ order.status === 'paid' ? 'Arrived' : 'Delivery by' }}</span>
                     <span class="val" :class="{ grayed: order.status !== 'paid' }">{{ fmtDay(order.arrive) }}</span>
                   </div>
                 </div>
@@ -149,7 +143,7 @@ function statusClass(s) {
     <footer class="actionbar">
       <div class="info">
         <span class="big">{{ orders.length }} order{{ orders.length !== 1 ? 's' : '' }}</span>
-        <span class="small">Tap any order for the full receipt</span>
+        <span class="small">Tap one for the receipt</span>
       </div>
       <button class="btn btn-primary" @click="startNew">+ New shipment</button>
     </footer>
@@ -176,30 +170,15 @@ function statusClass(s) {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 22px;
+  gap: 12px;
+  padding: 16px 18px;
   border: 0;
   background: none;
   text-align: left;
 }
-.receipt-route {
-  flex: 1 1 160px;
-  display: flex;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  min-width: 0;
-}
-.receipt-arrow { color: var(--muted); }
-.receipt-summary {
-  flex: 1 1 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.receipt-what { font-size: 15px; color: var(--muted); }
-.receipt-date { font-size: 14px; color: var(--muted); }
+.receipt-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.receipt-route { font-size: 18px; font-weight: 600; }
+.receipt-what { font-size: 14px; color: var(--muted); }
 .receipt-right {
   display: flex;
   flex-direction: column;

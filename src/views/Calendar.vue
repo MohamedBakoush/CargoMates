@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, packageLabel, isAbroad, startNew, switchMode } from '../store.js'
+import { state, go, fmtDay, packageLabel, startNew, switchMode, senderHome } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const s = state.shipment
@@ -27,7 +27,7 @@ const events = computed(() => {
   }
   const b = s.booking
   if (b && s.status !== 'paid' && s.status !== 'draft') {
-    list.push({ date: b.pickup, title: `Pickup · ${s.to.name}`, sub: `${b.driver} · 08:00`, needsYou: s.status === 'booked', route: 'booked' })
+    list.push({ date: b.pickup, title: `Pickup · ${s.to.name}`, sub: `${b.driver} · ${b.slot === 'pm' ? 'afternoon' : 'morning'}`, needsYou: s.status === 'booked', route: 'booked' })
     list.push({ date: b.arrive, title: `Arrives · pay`, sub: `${s.to.name} · 14:00`, needsYou: true, route: s.status === 'arrived' ? 'arrived' : 'onway' })
   }
   return list
@@ -57,32 +57,48 @@ const weeks = computed(() => {
   return out
 })
 
+const agenda = computed(() => {
+  const m = iso(monthStart.value).slice(0, 7)
+  return events.value.filter((e) => e.date && e.date.startsWith(m)).sort((a, b) => a.date.localeCompare(b.date))
+})
+
 const draft = computed(() => s.status === 'draft' && (s.count || s.to))
 </script>
 
 <template>
   <div class="page">
     <header class="topbar wrap">
-      <div class="brand">CargoMates</div>
-      <div class="title muted">Calendar</div>
+      <button class="btn btn-round" aria-label="Back to your shipment" @click="go(senderHome())"><Icon name="back" /></button>
+      <div class="brand">Calendar</div>
       <div class="spacer" />
-      <button class="btn btn-round" aria-label="Previous month" @click="offset--"><Icon name="back" /></button>
-      <div class="month">{{ monthName }}</div>
-      <button class="btn btn-round" aria-label="Next month" @click="offset++"><Icon name="next" /></button>
-      <button class="btn btn-pill" @click="offset = 0">Today</button>
-      <button class="btn btn-pill" @click="switchMode('driver')"><Icon name="truck" :size="20" />Driver</button>
-      <button class="btn btn-pill" @click="go('history')"><Icon name="receipt" :size="20" />Orders</button>
+      <div class="month-nav">
+        <button class="btn btn-round" aria-label="Previous month" @click="offset--"><Icon name="back" /></button>
+        <button class="month" @click="offset = 0">{{ monthName }}</button>
+        <button class="btn btn-round" aria-label="Next month" @click="offset++"><Icon name="next" /></button>
+      </div>
+      <button class="btn btn-pill collapse" aria-label="Driver" @click="switchMode('driver')"><Icon name="truck" :size="20" /><span class="lbl">Driver</span></button>
+      <button class="btn btn-pill collapse" aria-label="Orders" @click="go('history')"><Icon name="receipt" :size="20" /><span class="lbl">Orders</span></button>
     </header>
 
     <div class="body">
-      <aside class="drafts">
+      <aside v-if="draft" class="drafts">
         <div class="h">Not booked yet</div>
-        <button v-if="draft" class="card draft" @click="go('details')">
+        <button class="card draft" @click="go('details')">
           <span class="d-title">{{ s.from }} → {{ s.to ? s.to.name : '?' }}</span>
           <span class="muted">{{ packageLabel }} · tap to finish</span>
         </button>
-        <p class="muted small">Unfinished bookings wait here.</p>
       </aside>
+
+      <section class="agenda">
+        <p v-if="!agenda.length" class="muted">Nothing planned in {{ monthName }}.</p>
+        <component :is="e.route ? 'button' : 'div'" v-for="(e, j) in agenda" :key="j"
+                   class="event a-event" :class="{ ring: e.needsYou }" @click="e.route && go(e.route)">
+          <span class="a-date">{{ fmtDay(e.date) }}</span>
+          <span class="e-title">{{ e.title }}</span>
+          <span class="e-sub">{{ e.sub }}</span>
+        </component>
+        <p class="legend"><span class="swatch" />Orange ring: you need to do something</p>
+      </section>
 
       <section class="month-grid">
         <div class="grid head">
@@ -98,11 +114,11 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
             </component>
           </div>
         </div>
+        <p class="legend"><span class="swatch" />Orange ring: you need to do something (have it ready, pay)</p>
       </section>
     </div>
 
     <footer class="actionbar">
-      <div class="info legend"><span class="swatch" />Orange ring: you need to do something (have it ready, pay)</div>
       <button class="btn btn-primary" @click="startNew">+ New shipment</button>
     </footer>
   </div>
@@ -110,14 +126,13 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
 
 <style scoped>
 .wrap { flex-wrap: wrap; }
-.title { font-size: 20px; font-weight: 600; }
-.month { font-size: 22px; font-weight: 600; min-width: 170px; text-align: center; }
+.month-nav { display: flex; align-items: center; gap: 8px; }
+.month { font-size: 20px; font-weight: 600; min-width: 170px; text-align: center; border: 0; background: none; min-height: 44px; }
 .btn-round, .btn-pill { background: var(--card); }
 .drafts { flex: 0 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 12px; }
 .h { font-size: 17px; font-weight: 600; }
 .draft { border: 0; text-align: left; display: flex; flex-direction: column; gap: 4px; min-height: 72px; }
 .d-title { font-size: 16px; font-weight: 600; }
-.small { font-size: 14px; margin: 0; }
 .month-grid { flex: 999 1 640px; min-width: 0; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
 .head { font-size: 15px; font-weight: 600; color: var(--muted); text-align: center; }
@@ -129,6 +144,17 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
 .event.ring { box-shadow: 0 0 0 2.5px var(--accent); }
 .e-title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .e-sub { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.legend { flex-direction: row; align-items: center; gap: 10px; font-size: 15px; color: var(--muted); }
+.legend { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+.agenda { display: none; }
 .swatch { width: 28px; height: 20px; border-radius: 6px; background: var(--card); box-shadow: 0 0 0 2.5px var(--accent); flex: none; }
+
+@media (max-width: 760px) {
+  .month-grid { display: none; }
+  .agenda { display: flex; flex-direction: column; gap: 10px; flex: 1 1 100%; padding-top: 8px; }
+  .a-event { min-height: 64px; padding: 12px 14px; width: 100%; }
+  .a-date { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .a-event .e-title { font-size: 16px; }
+  .drafts { flex-basis: 100%; }
+  .month-nav { order: 5; flex: 1 1 100%; justify-content: space-between; }
+}
 </style>

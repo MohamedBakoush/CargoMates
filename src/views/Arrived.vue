@@ -1,9 +1,11 @@
 <script setup>
+import { ref } from 'vue'
 import { state, go, fmtDay, kr, pay, startNew } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
 
 const s = state.shipment
+const reported = ref(false)
 const METHODS = [
   { id: 'vipps', label: 'Vipps' },
   { id: 'card', label: 'Card' },
@@ -33,7 +35,12 @@ const METHODS = [
         <div class="methods">
           <button v-for="m in METHODS" :key="m.id" class="method" :class="{ on: s.payMethod === m.id }" @click="s.payMethod = m.id">{{ m.label }}</button>
         </div>
-        <button class="btn-ghost" style="align-self: flex-start">Something wrong? Tell us before you pay</button>
+        <div v-if="reported" class="card issue">
+          <div class="issue-title">Payment is on hold</div>
+          <div class="muted">Your CargoMates contact will call you within the hour to sort it out.</div>
+          <button class="btn-ghost" @click="reported = false">It is fine after all</button>
+        </div>
+        <button v-else class="btn-ghost" style="align-self: flex-start" @click="reported = true">Something wrong? Tell us before you pay</button>
       </template>
 
       <template v-else>
@@ -41,7 +48,7 @@ const METHODS = [
           <span class="ok"><Icon name="check" :size="30" :stroke="2.4" /></span>
           <h1 class="h1">Paid. Thanks!</h1>
         </div>
-        <p class="sub">{{ s.from }} → {{ s.to.name }} is done. You can find it in your calendar.</p>
+        <p class="sub">{{ s.from }} → {{ s.to.name }} is done. The receipt is under Orders.</p>
       </template>
     </template>
     <h1 v-else class="h1">Nothing has arrived yet</h1>
@@ -51,11 +58,13 @@ const METHODS = [
         <span class="big">{{ s.booking ? kr(s.booking.price) : '' }}</span>
         <span class="small">{{ s.to ? `${s.from} → ${s.to.name}` : '' }}</span>
       </div>
-      <button class="btn" @click="startNew">Send another</button>
-      <button v-if="s.status !== 'paid'" class="btn btn-primary" :disabled="!s.booking" @click="pay">
-        Pay {{ s.booking ? kr(s.booking.price) : '' }} with {{ METHODS.find((m) => m.id === s.payMethod).label }}
+      <button v-if="s.status !== 'paid'" class="btn btn-primary" :disabled="!s.booking || reported" @click="pay">
+        Pay with {{ METHODS.find((m) => m.id === s.payMethod).label }}
       </button>
-      <button v-else class="btn btn-primary" @click="go('calendar')">Open calendar</button>
+      <template v-else>
+        <button class="btn" @click="go('history')">Receipt</button>
+        <button class="btn btn-primary" @click="startNew">Send another</button>
+      </template>
     </template>
   </PageLayout>
 </template>
@@ -68,6 +77,8 @@ const METHODS = [
 .methods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .method { min-height: 72px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--card); font-size: 18px; font-weight: 600; }
 .method.on { border: 2.5px solid var(--navy); }
+.issue { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; border-left: 3px solid var(--accent); }
+.issue-title { font-size: 17px; font-weight: 600; }
 .headline { display: flex; align-items: center; gap: 16px; }
 .ok { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex: none; }
 </style>

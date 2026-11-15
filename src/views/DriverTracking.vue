@@ -4,6 +4,7 @@ import { state, go } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const pkg = computed(() => state.driverActive)
+const print = () => window.print()
 </script>
 
 <template>
@@ -15,9 +16,9 @@ const pkg = computed(() => state.driverActive)
       <div class="spacer" />
     </header>
 
-    <div class="body tracking-body">
-      <div class="label-card card">
-        <h1 class="label-title">Tracking label</h1>
+    <div class="body col">
+      <div class="task-card card">
+        <h1 class="task-title">Tracking label</h1>
         <p class="muted">Print or screenshot this label and attach it to the package.</p>
 
         <div class="label-preview">
@@ -75,23 +76,19 @@ const pkg = computed(() => state.driverActive)
         <span class="big">{{ pkg.trackingCode }}</span>
         <span class="small">Attach this label to the package</span>
       </div>
-      <button class="btn btn-driver" @click="typeof window !== 'undefined' && window.print()">
+      <button class="btn" @click="print">
         <Icon name="printer" :size="20" /> Print label
       </button>
       <button class="btn btn-primary" @click="go('d-dropoff')">
-        Continue to drop-off →
+        Go to drop-off
       </button>
     </footer>
   </div>
 </template>
 
 <style scoped>
-.role-tag { font-size: 14px; font-weight: 700; color: #fff; background: #6A1B9A; padding: 4px 12px; border-radius: 999px; }
-.tracking-body { flex-direction: column; gap: 16px; padding: 8px 24px 40px; }
-.label-card { max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
-.label-title { font-size: 26px; font-weight: 600; margin: 0; }
 
-.label-preview { background: var(--soft); border-radius: 16px; padding: 24px; display: flex; justify-content: center; }
+.label-preview { background: var(--soft); border-radius: 16px; padding: 16px; display: flex; justify-content: center; }
 .label-inner { background: #fff; border: 2px dashed var(--line-strong); border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
 .label-logo { font-weight: 700; font-size: 20px; color: var(--navy); }
 
@@ -106,11 +103,8 @@ const pkg = computed(() => state.driverActive)
 .qr-area { padding: 8px; }
 .qr-mock { width: 80px; height: 80px; }
 
-.btn-driver { background: var(--navy); color: #fff; min-height: 56px; font-size: 17px; font-weight: 600; border-radius: 16px; border: 0; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
-
 @media print {
   .topbar, .actionbar { display: none !important; }
-  .tracking-body { padding: 0; }
-  .label-card { box-shadow: none; border: 0; }
+    .task-card { box-shadow: none; border: 0; }
 }
 </style>

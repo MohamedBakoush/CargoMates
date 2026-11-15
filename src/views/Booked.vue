@@ -1,16 +1,25 @@
 <script setup>
-import { computed } from 'vue'
-import { state, go, fmtDay, kr, setStatus } from '../store.js'
+import { ref, computed } from 'vue'
+import { state, go, fmtDay, kr, slotText, setStatus } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
-import Guarantees from '../components/Guarantees.vue'
 
 const s = state.shipment
 const hasArrived = computed(() => s.booking && s.booking.arrived)
+const shared = ref(false)
 
 function track() {
   if (s.status === 'booked') setStatus('onway')
   go('onway')
+}
+
+async function share() {
+  const text = `Your shipment from ${s.from} arrives by ${fmtDay(s.booking.arrive)}. Track it with CargoMates.`
+  try {
+    if (navigator.share) await navigator.share({ title: 'CargoMates shipment', text })
+    else await navigator.clipboard.writeText(text)
+    shared.value = true
+  } catch (e) { /* share sheet dismissed */ }
 }
 </script>
 
@@ -18,18 +27,29 @@ function track() {
   <PageLayout calendar>
     <template v-if="s.booking">
       <div class="headline">
-        <span class="ok"><Icon name="check" :size="30" :stroke="2.4" /></span>
-        <h1 class="h1">Booked. {{ s.booking.driver }} is on it.</h1>
+        <span class="ok"><Icon name="check" :size="26" :stroke="2.4" /></span>
+        <h1 class="h1">Booked with {{ s.booking.driver }}</h1>
       </div>
 
-      <div class="card row">
-        <span class="avatar">{{ s.booking.driver[0] }}</span>
-        <div class="grow">
-          <div class="name">{{ s.booking.driver }}</div>
-          <div class="muted">Picked up today</div>
+      <div class="card timeline">
+        <div class="tl-row">
+          <span class="tl-dot now-dot" />
+          <div class="tl-content">
+            <div class="name">Pickup at your door</div>
+            <div class="muted">{{ fmtDay(s.booking.pickup) }}, {{ slotText(s.booking.slot) }} · {{ s.from }}</div>
+          </div>
         </div>
-        <a class="btn" href="sms:">Message</a>
-        <a class="btn" href="tel:">Call</a>
+        <div class="tl-line" />
+        <div class="tl-row">
+          <span class="tl-dot" :class="hasArrived ? 'now-dot' : 'next-dot'" />
+          <div class="tl-content">
+            <div class="name">{{ hasArrived ? 'Delivered' : 'Delivery' }} <span v-if="!hasArrived" class="g-tag">Guaranteed</span></div>
+            <div class="muted">
+              {{ hasArrived ? '' : 'By ' }}{{ fmtDay(s.booking.arrive) }} ·
+              {{ s.booking.hub ? s.booking.hub + ', open 08:00 to 18:00' : 'to the door in ' + s.to.name }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="s.booking.note" class="card note-card">
@@ -37,49 +57,14 @@ function track() {
         <div class="note-text">{{ s.booking.note }}</div>
       </div>
 
-      <div class="card timeline">
-        <div class="tl-row done">
-          <span class="tl-dot done-dot" />
-          <div class="tl-content">
-            <div class="name">Picked up</div>
-            <div class="muted">{{ fmtDay(s.booking.pickup) }} · {{ s.from }}</div>
-          </div>
-        </div>
-        <div class="tl-line" />
-        <div class="tl-row" :class="{ done: hasArrived, estimate: !hasArrived }">
-          <span class="tl-dot" :class="{ 'done-dot': hasArrived, 'est-dot': !hasArrived }" />
-          <div class="tl-content">
-            <div class="name" :class="{ grayed: !hasArrived }">
-              {{ hasArrived ? 'Arrived' : 'Estimated arrival' }}
-            </div>
-            <div class="muted" :class="{ grayed: !hasArrived }">
-              {{ fmtDay(s.booking.arrive) }} · {{ s.to ? s.to.name : '' }}
-            </div>
-            <span v-if="!hasArrived" class="est-tag">Estimate</span>
-          </div>
-        </div>
+      <div class="pair">
+        <a class="btn" href="sms:">Message driver</a>
+        <a class="btn" href="tel:">Call driver</a>
       </div>
-
-      <div v-if="s.booking.hub" class="card">
-        <div class="label">Your pickup point</div>
-        <div class="name">{{ s.booking.hub }}</div>
-        <div class="muted">Open 08:00 to 18:00 · ready from {{ fmtDay(s.booking.arrive) }}</div>
+      <div class="pair">
+        <button class="btn" @click="go('calendar')"><Icon name="calendar" :size="20" />In your calendar</button>
+        <button class="btn" @click="share">{{ shared ? 'Shared ✓' : 'Share with receiver' }}</button>
       </div>
-      <div v-else class="card">
-        <div class="label">Delivered to</div>
-        <div class="name">{{ s.to.name }}, {{ s.to.country }}</div>
-      </div>
-
-      <Guarantees compact />
-
-      <button class="card row link" @click="go('calendar')">
-        <Icon name="calendar" :size="28" />
-        <span class="grow">
-          <span class="name">Added to your calendar</span>
-          <span class="muted">Pickup today · arrival {{ fmtDay(s.booking.arrive) }}</span>
-        </span>
-        <span class="name">Open</span>
-      </button>
     </template>
     <template v-else>
       <h1 class="h1">Nothing booked yet</h1>
@@ -87,36 +72,31 @@ function track() {
     </template>
 
     <template #actions>
-      <div class="info">
-        <span class="big" style="font-size: 20px">{{ s.booking ? 'Picked up today' : '' }}</span>
-        <span class="small">Nothing paid yet · {{ s.booking ? kr(s.booking.price) : '' }} when it arrives</span>
+      <div v-if="s.booking" class="info">
+        <span class="big">{{ kr(s.booking.price) }}</span>
+        <span class="small">Nothing to pay until it arrives</span>
       </div>
-      <button class="btn">Share with receiver</button>
       <button class="btn btn-primary" :disabled="!s.booking" @click="track">Track shipment</button>
     </template>
   </PageLayout>
 </template>
 
 <style scoped>
-.headline { display: flex; align-items: center; gap: 16px; }
-.ok { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex: none; }
-.row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.row .btn { min-height: 56px; padding: 0 22px; font-size: 17px; }
-.grow { flex: 1 1 180px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.avatar { width: 56px; height: 56px; border-radius: 50%; background: #EDE7DD; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; flex: none; }
-.name { font-size: 19px; font-weight: 600; }
-.link { border: 0; background: var(--soft); text-align: left; min-height: 72px; width: 100%; }
+.headline { display: flex; align-items: center; gap: 14px; }
+.ok { width: 52px; height: 52px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex: none; }
+.name { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pair .btn { min-height: 56px; padding: 0 12px; font-size: 16px; }
 
 .note-card { border-left: 3px solid var(--accent); }
 .note-text { font-size: 17px; margin-top: 4px; font-style: italic; }
 
-.timeline { display: flex; flex-direction: column; gap: 0; padding: 20px 22px; }
+.timeline { display: flex; flex-direction: column; padding: 20px; }
 .tl-row { display: flex; align-items: flex-start; gap: 14px; }
-.tl-dot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin-top: 4px; }
-.done-dot { background: var(--accent); }
-.est-dot { background: var(--line-strong); }
-.tl-line { width: 2px; height: 28px; background: var(--line); margin-left: 6px; }
-.tl-content { display: flex; flex-direction: column; gap: 2px; }
-.grayed { opacity: 0.45; }
-.est-tag { font-size: 13px; font-weight: 600; color: var(--muted); background: var(--soft); padding: 2px 10px; border-radius: 8px; align-self: flex-start; margin-top: 4px; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin-top: 5px; }
+.now-dot { background: var(--accent); }
+.next-dot { background: var(--card); border: 2.5px solid var(--navy); }
+.tl-line { width: 2px; height: 24px; background: var(--line); margin-left: 6px; }
+.tl-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.g-tag { font-size: 12px; font-weight: 700; color: var(--navy); background: #EEF2FA; padding: 2px 8px; border-radius: 6px; }
 </style>

@@ -32,9 +32,9 @@ function confirm() {
       <div class="spacer" />
     </header>
 
-    <div class="body dropoff-body">
-      <div class="dropoff-card card">
-        <h1 class="dropoff-title">Confirm drop-off</h1>
+    <div class="body col">
+      <div class="task-card card">
+        <h1 class="task-title">Confirm drop-off</h1>
         <p class="muted">{{ pkg.to }} · {{ pkg.dropAddr }}</p>
 
         <div class="steps">
@@ -44,7 +44,7 @@ function confirm() {
             <div class="step-content">
               <span class="step-label">Photo of package at destination</span>
               <img v-if="photoPackage" :src="photoPackage" class="step-preview" />
-              <label v-if="step === 1" class="photo-btn btn btn-driver">
+              <label v-if="step === 1" class="btn-driver">
                 <Icon name="camera" :size="20" /> Take photo
                 <input type="file" accept="image/*" capture="environment" @change="takePhoto" hidden />
               </label>
@@ -62,7 +62,7 @@ function confirm() {
                 </button>
               </div>
               <div v-if="photoScan && step === 2" class="scanning">
-                <div class="pulse-ring" />
+                <div class="pulse-ring small-ring" />
                 <span class="muted">Verifying…</span>
               </div>
               <span v-if="step > 2" class="verified"><Icon name="check" :size="16" /> Verified</span>
@@ -99,33 +99,11 @@ function confirm() {
 </template>
 
 <style scoped>
-.role-tag { font-size: 14px; font-weight: 700; color: #fff; background: #C62828; padding: 4px 12px; border-radius: 999px; }
-.dropoff-body { flex-direction: column; gap: 16px; padding: 8px 24px 40px; }
-.dropoff-card { max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
-.dropoff-title { font-size: 26px; font-weight: 600; margin: 0; }
-
-.steps { display: flex; flex-direction: column; }
-.step-item { display: flex; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); }
-.step-item:last-child { border-bottom: 0; }
-.step-item.later { opacity: 0.4; }
-
-.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex: none; }
-.step-item.current .step-num { background: var(--navy); color: #fff; }
-.step-item.done .step-num { background: #2B8A3E; color: #fff; }
-
-.step-content { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.step-label { font-size: 17px; font-weight: 600; }
-.step-preview { width: 120px; height: 90px; border-radius: 12px; object-fit: cover; }
-
-.photo-btn { width: fit-content; }
-.btn-driver { background: var(--navy); color: #fff; min-height: 52px; font-size: 16px; font-weight: 600; border-radius: 14px; border: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 
 .scan-area { display: flex; }
+.small-ring { width: 32px; height: 32px; }
 .scanning { display: flex; align-items: center; gap: 12px; }
-.pulse-ring { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--accent); animation: pulse-d 1.5s ease-in-out infinite; }
-@keyframes pulse-d { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } }
 
 .verified { color: #2B8A3E; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 
-.skip-row { max-width: 700px; display: flex; justify-content: flex-end; }
 </style>

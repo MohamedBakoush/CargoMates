@@ -26,6 +26,9 @@ a { color: var(--navy); }
 .brand { font-weight: 700; font-size: 20px; }
 .spacer { flex: 1; }
 .body { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; gap: 32px; padding-block: 0 20px; overflow-y: auto; align-items: stretch; }
+/* single-column pages (driver side) */
+.body.col { flex-direction: column; flex-wrap: nowrap; gap: 16px; padding-top: 8px; padding-bottom: 40px; }
+.body.col > * { flex: none; width: 100%; max-width: 700px; }
 .rail { flex: 0 1 280px; min-width: 240px; max-height: 100%; overflow-y: auto; }
 .main { flex: 999 1 480px; min-width: 0; max-height: 100%; overflow-y: auto; padding: 20px 8px 40px; }
 .main-inner { max-width: 700px; display: flex; flex-direction: column; gap: 22px; }
@@ -34,15 +37,7 @@ a { color: var(--navy); }
 .actionbar .big { font-size: 26px; font-weight: 700; }
 .actionbar .small { font-size: 15px; color: var(--muted); }
 
-/* When the screen is narrow the columns stack and the whole body scrolls */
-@media (max-width: 760px) {
-  .rail, .main { max-height: none; overflow: visible; }
-  .rail { flex-basis: 100%; }
-  .topbar, .body, .actionbar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  .h1 { font-size: 30px; }
-  .sentence, .word { font-size: 24px; }
-  .btn-primary { min-width: 0; flex: 1 1 auto; }
-}
+.stepbar { display: none; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
@@ -91,3 +86,65 @@ input.word { outline: none; }
 .sheet { width: 100%; max-width: 640px; max-height: 80vh; overflow-y: auto; background: var(--bg); border-radius: 28px 28px 0 0; padding: 12px 20px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
 .sheet-handle { width: 48px; height: 5px; border-radius: 3px; background: var(--line-strong); margin: 4px auto 8px; }
 .sheet-title { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+
+/* ---------- driver side ---------- */
+.role-tag { font-size: 13px; font-weight: 700; color: #fff; background: var(--navy); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+.btn-driver { background: var(--navy); color: #fff; min-height: 56px; font-size: 17px; font-weight: 600; border-radius: 16px; border: 0; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+.status-badge { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.st-pending { background: #FFF3E0; color: #E65100; }
+.st-accepted { background: #E8F0FF; color: #1565C0; }
+.st-transit { background: #E0F2F1; color: #00695C; }
+.st-done { background: #E6F5E6; color: #2B8A3E; }
+.pulse-ring { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--accent); animation: pulse 1.6s ease-in-out infinite; flex: none; }
+@keyframes pulse { 0%, 100% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } }
+
+.task-card { display: flex; flex-direction: column; gap: 12px; }
+.task-title { font-size: 24px; font-weight: 600; margin: 0; }
+.steps { display: flex; flex-direction: column; }
+.steps .step-item { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.steps .step-item:last-child { border-bottom: 0; }
+.steps .step-item.later { opacity: 0.4; }
+.steps .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex: none; }
+.steps .current .step-num { background: var(--navy); color: #fff; }
+.steps .done .step-num { background: #2B8A3E; color: #fff; }
+.steps .step-content { flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.steps .step-label { font-size: 17px; font-weight: 600; }
+.steps .step-preview { width: 120px; height: 90px; border-radius: 12px; object-fit: cover; }
+.skip-row { display: flex; justify-content: flex-end; }
+
+/* ---------- phones: the tracker collapses into a step bar, everything gets compact ---------- */
+@media (max-width: 760px) {
+  .rail { display: none; }
+  .stepbar { display: flex; flex-direction: column; gap: 6px; width: 100%; flex: none; border: 0; background: none; text-align: left; padding: 4px 0 8px; font-size: 14px; color: var(--muted); }
+  .stepbar b { color: var(--ink); font-weight: 600; }
+  .stepbar-track { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .stepbar-fill { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .main { max-height: none; overflow: visible; padding: 8px 0 24px; }
+  .body { gap: 8px; align-content: flex-start; }
+  .main-inner { gap: 16px; }
+  .topbar, .body, .actionbar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .topbar { min-height: 60px; padding-block: 6px; gap: 8px; }
+  .brand { font-size: 18px; }
+  .btn-round { width: 44px; height: 44px; min-height: 44px; }
+  .btn-pill { min-height: 44px; padding: 0 14px; }
+  .btn-pill.collapse { width: 44px; padding: 0; }
+  .btn-pill.collapse .lbl { display: none; }
+  .actionbar { gap: 8px; padding-block: 10px calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .actionbar .info { flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+  .actionbar .big { font-size: 20px !important; }
+  .actionbar .small { font-size: 13px; }
+  .actionbar .btn, .actionbar .btn-driver { min-height: 52px; padding: 0 16px; font-size: 16px; flex: 1 1 auto; }
+  .h1 { font-size: 26px; }
+  .sub { font-size: 16px; }
+  .sentence { font-size: 20px; line-height: 2.7; }
+  .word { font-size: 20px; min-height: 44px; }
+  .btn-primary { min-width: 0; }
+  .option { min-height: 0; padding: 14px 16px; gap: 12px; }
+  .option.selected { padding: 13px 15px; }
+  .option .title { font-size: 17px; }
+  .option .hint { font-size: 14px; }
+  .option .price { font-size: 18px; }
+  .radio { width: 26px; height: 26px; }
+  .selected .radio { border-width: 7px; }
+  .seg button { min-height: 52px; font-size: 16px; }
+}
