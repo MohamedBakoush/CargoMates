@@ -1,16 +1,32 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, kr, startNew, senderHome } from '../store.js'
+import { state, go, fmtDay, kr, startNew, senderHome, allOrders, payOrder } from '../store.js'
+import RouteMap from '../components/RouteMap.vue'
 import Icon from '../components/Icon.vue'
 
-const expandedId = ref(state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null)
+const expandedId = ref(state.openOrder || (state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null))
+state.openOrder = null
 
 const orders = computed(() =>
-  [...state.history].sort((a, b) => (state.justPaid ? b.id.localeCompare(a.id, undefined, { numeric: true }) : 0) || (b.pickup || '').localeCompare(a.pickup || ''))
+  [...allOrders.value].sort((a, b) => (state.justPaid ? b.id.localeCompare(a.id, undefined, { numeric: true }) : 0) || (b.pickup || '').localeCompare(a.pickup || ''))
 )
 
 function toggle(id) {
   expandedId.value = expandedId.value === id ? null : id
+}
+
+// What an unpaid order needs next: where it is, and what the sender can do about it
+function pending(o) {
+  if (o.status === 'arrived') return { text: 'It has arrived. Pay to finish.', progress: 100 }
+  if (o.status === 'onway') return { text: `${o.driver} is on the way · arrives by ${fmtDay(o.arrive)}`, progress: 55 }
+  return { text: `${o.driver} picks up ${fmtDay(o.pickup)} · delivery by ${fmtDay(o.arrive)}`, progress: 0 }
+}
+function track(o) {
+  go(o.status === 'onway' ? 'onway' : 'booked')
+}
+function payNow(o) {
+  if (o.current) go('arrived')
+  else payOrder(o.id)
 }
 
 function statusLabel(s) {
@@ -33,8 +49,9 @@ function statusClass(s) {
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go(senderHome())"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
-      <button class="role-tag" aria-label="Sender home" @click="go(senderHome())">Sender</button>
+      <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
       <button class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
     </header>
 
@@ -70,7 +87,7 @@ function statusClass(s) {
 
                 <div class="receipt-section">
                   <div class="receipt-logo">CargoMates</div>
-                  <div class="receipt-id muted">Order #{{ order.id.replace('h', '') }}</div>
+                  <div class="receipt-id muted">{{ order.current ? 'In progress' : 'Order #' + order.id.replace('h', '') }}</div>
                 </div>
 
                 <div class="receipt-grid">
@@ -135,8 +152,19 @@ function statusClass(s) {
                 <div v-if="order.paidDate" class="receipt-footer">
                   <span class="muted">Paid {{ fmtDay(order.paidDate) }} via {{ order.payMethod || 'Vipps' }}</span>
                 </div>
-                <div v-else class="receipt-footer">
-                  <span class="muted unpaid">Payment pending · pay when it arrives</span>
+                <div v-else class="pending">
+                  <RouteMap :from="order.from || 'Drammen'" :to="order.to || order.title" :progress="pending(order).progress" />
+                  <div class="pending-text">{{ pending(order).text }}</div>
+                  <template v-if="order.status === 'arrived'">
+                    <button class="btn btn-primary" @click="payNow(order)">Pay {{ kr(order.price || 0) }}</button>
+                  </template>
+                  <template v-else>
+                    <div class="pending-actions">
+                      <button v-if="order.current" class="btn btn-primary" @click="track(order)">{{ order.status === 'onway' ? 'Track shipment' : 'See booking' }}</button>
+                      <button v-if="order.current" class="btn" @click="go('chat')">Message driver</button>
+                    </div>
+                    <span class="muted pay-later">Nothing to pay yet. You pay when it arrives.</span>
+                  </template>
                 </div>
               </div>
             </Transition>
@@ -277,13 +305,17 @@ function statusClass(s) {
   text-align: center;
   font-size: 14px;
 }
-.unpaid { color: var(--accent); font-weight: 600; }
+.pending { display: flex; flex-direction: column; gap: 10px; }
+.pending-text { font-size: 16px; font-weight: 600; }
+.pending-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.pending .btn { min-height: 52px; min-width: 0; padding: 0 12px; font-size: 16px; }
+.pay-later { font-size: 14px; text-align: center; }
 
 /* expand transition */
 .expand-enter-active { animation: expand-in 0.25s ease-out; }
 .expand-leave-active { animation: expand-in 0.2s ease-in reverse; }
 @keyframes expand-in {
   from { opacity: 0; max-height: 0; }
-  to { opacity: 1; max-height: 600px; }
+  to { opacity: 1; max-height: 1000px; }
 }
 </style>

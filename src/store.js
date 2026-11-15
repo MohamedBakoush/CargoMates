@@ -120,47 +120,64 @@ const DRIVERS = [
 const MOCK_PACKAGES = [
   {
     id: 'pkg-1', from: 'Oslo', to: 'Bergen', what: '2 medium boxes', size: 'medium', count: 2,
-    sender: 'Kari N.', price: 1650, km: 460, pickup: null, status: 'available',
+    sender: 'Kari N.', senderRating: 4.9, price: 1650, km: 460, pickup: null, status: 'available',
     pickupAddr: 'Storgata 12, 0155 Oslo', dropAddr: 'Torgallmenningen 4, 5014 Bergen',
     weight: '10-50 kg', note: 'Fragile — contains ceramics',
   },
   {
     id: 'pkg-2', from: 'Drammen', to: 'Kristiansand', what: '1 pallet', size: 'pallet', count: 1,
-    sender: 'Erik O.', price: 2280, km: 290, pickup: null, status: 'available',
+    sender: 'Erik O.', senderRating: 4.7, price: 2280, km: 290, pickup: null, status: 'available',
     pickupAddr: 'Grønland 2, 3045 Drammen', dropAddr: 'Markens gate 20, 4611 Kristiansand',
     weight: '50-100 kg', note: '',
   },
   {
     id: 'pkg-3', from: 'Stavanger', to: 'Trondheim', what: '3 large items', size: 'large', count: 3,
-    sender: 'Maja L.', price: 3410, km: 830, pickup: null, status: 'available',
+    sender: 'Maja L.', senderRating: 5.0, price: 3410, km: 830, pickup: null, status: 'available',
     pickupAddr: 'Klubbgata 8, 4013 Stavanger', dropAddr: 'Nordre gate 15, 7011 Trondheim',
     weight: '100+ kg', note: 'Furniture — needs blankets',
   },
   {
     id: 'pkg-4', from: 'Kongsberg', to: 'Oslo', what: '1 small box', size: 'small', count: 1,
-    sender: 'Thomas R.', price: 480, km: 80, pickup: null, status: 'available',
+    sender: 'Thomas R.', senderRating: 4.6, price: 480, km: 80, pickup: null, status: 'available',
     pickupAddr: 'Kirkegata 3, 3611 Kongsberg', dropAddr: 'Karl Johans gate 22, 0159 Oslo',
     weight: 'Under 10 kg', note: 'Electronics — handle with care',
   },
   {
     id: 'pkg-5', from: 'Amsterdam', to: 'Copenhagen', what: '2 pallets', size: 'pallet', count: 2,
-    sender: 'Sanne D.', price: 6900, km: 780, pickup: null, status: 'available',
+    sender: 'Sanne D.', senderRating: 4.8, price: 6900, km: 780, pickup: null, status: 'available',
     pickupAddr: 'Herengracht 120, 1015 Amsterdam', dropAddr: 'Vesterbrogade 40, 1620 Copenhagen',
     weight: '100+ kg', note: '',
   },
   {
     id: 'pkg-6', from: 'Paris', to: 'Berlin', what: '6 medium boxes', size: 'medium', count: 6,
-    sender: 'Luc M.', price: 5400, km: 1050, pickup: null, status: 'available',
+    sender: 'Luc M.', senderRating: 4.9, price: 5400, km: 1050, pickup: null, status: 'available',
     pickupAddr: 'Rue de Rivoli 80, 75004 Paris', dropAddr: 'Torstraße 60, 10119 Berlin',
     weight: '50-100 kg', note: 'Trade-fair materials',
   },
   {
     id: 'pkg-7', from: 'Hamburg', to: 'Malmö', what: '1 large item', size: 'large', count: 1,
-    sender: 'Jonas W.', price: 3100, km: 480, pickup: null, status: 'available',
+    sender: 'Jonas W.', senderRating: 4.7, price: 3100, km: 480, pickup: null, status: 'available',
     pickupAddr: 'Mönckebergstraße 7, 20095 Hamburg', dropAddr: 'Stortorget 2, 211 22 Malmö',
     weight: '10-50 kg', note: '',
   },
 ]
+
+// The two people using this prototype. Ratings come from the other side after each job.
+export const PROFILES = {
+  sender: { name: 'Alex Berg', rating: 4.9, ratings: 14, since: '2024' },
+  driver: { name: 'Jonas Lie', rating: 4.8, ratings: 212, since: '2022' },
+}
+
+// Jobs the driver finished before this session, with the rating each sender gave
+function seedDriverPast() {
+  const d = new Date()
+  const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
+  return [
+    { id: 'past-1', from: 'Oslo', to: 'Gothenburg', what: '2 pallets', price: 3900, date: iso(-4), sender: 'Hanne S.', rated: 5 },
+    { id: 'past-2', from: 'Bergen', to: 'Stavanger', what: '4 medium boxes', price: 1450, date: iso(-11), sender: 'Ola T.', rated: 5 },
+    { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 2700, date: iso(-19), sender: 'Mette K.', rated: 4 },
+  ]
+}
 
 const STORAGE_KEY = 'cargomates-v1'
 
@@ -211,6 +228,8 @@ export const state = reactive({
   history: (saved && saved.history) || seedHistory(),
   driverPackages: MOCK_PACKAGES.map(p => ({ ...p })),
   driverActive: null, // the package the driver is currently working on
+  driverPast: seedDriverPast(),
+  openOrder: null, // order to show expanded when Orders opens
   // where the driver is going, and which countries they take jobs in (empty = all of Europe)
   driverRoute: { from: '', to: '', countries: [], ...(saved && saved.driverRoute ? saved.driverRoute : {}) },
 })
@@ -238,7 +257,7 @@ function seedHistory() {
 
 const ROUTES = [
   'photos', 'details', 'customs', 'delivery', 'bidding', 'booked', 'onway', 'arrived', 'calendar', 'history',
-  'd-packages', 'd-package', 'd-pickup', 'd-tracking', 'd-dropoff', 'chat', 'd-chat',
+  'd-packages', 'd-package', 'd-pickup', 'd-tracking', 'd-dropoff', 'chat', 'd-chat', 'profile', 'd-profile',
 ]
 
 function readHash() {
@@ -450,6 +469,7 @@ export function confirmBid() {
   if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
   s.booking = {
     driver: bid.driver.name,
+    driverRating: bid.driver.rating,
     pickup: bid.pickupDate,
     arrive: bid.deliverBy,
     arrived: false,
@@ -526,6 +546,29 @@ export function pay() {
   go('history')
 }
 
+// Every order the sender has: past ones plus the shipment in progress (not in history until paid)
+export const allOrders = computed(() => {
+  const s = state.shipment
+  const list = [...state.history]
+  if (s.booking && ['booked', 'onway', 'arrived'].includes(s.status)) {
+    list.push({
+      id: 'current', current: true, title: s.to.name, from: s.from, to: s.to.name, toCountry: s.to.country,
+      what: packageLabel.value, pickup: s.booking.pickup, arrive: s.booking.arrive, driver: s.booking.driver,
+      hub: s.booking.hub || null, price: s.booking.price, note: s.booking.note || '', payMethod: s.payMethod,
+      paidDate: null, status: s.status, abroad: isAbroad.value, code: s.booking.hub ? s.booking.code : '',
+    })
+  }
+  return list
+})
+
+// Pay a past order straight from its receipt
+export function payOrder(id) {
+  const o = state.history.find((x) => x.id === id)
+  if (!o) return
+  o.status = 'paid'
+  o.paidDate = new Date().toISOString().slice(0, 10)
+}
+
 export function startNew() {
   if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
   Object.assign(state.shipment, freshShipment())
@@ -556,7 +599,7 @@ export function switchMode(mode) {
   if (mode === 'driver') {
     go('d-packages')
   } else {
-    go(senderHome())
+    go('photos')
   }
 }
 

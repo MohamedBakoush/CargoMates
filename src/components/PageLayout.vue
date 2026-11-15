@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { state, go, switchMode, steps, senderHome } from '../store.js'
+import { state, go, switchMode, steps } from '../store.js'
 import Tracker from './Tracker.vue'
 import Icon from './Icon.vue'
 
@@ -24,10 +24,10 @@ const stepNow = computed(() => {
     <header class="topbar">
       <button v-if="back" class="btn btn-round" aria-label="Back" @click="go(back)"><Icon name="back" /></button>
       <div class="brand">CargoMates</div>
-      <button class="role-tag" aria-label="Sender home" @click="go(senderHome())">Sender</button>
+      <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
       <button class="btn btn-pill collapse" aria-label="Driver" @click="switchMode('driver')"><Icon name="truck" :size="20" /><span class="lbl">Driver</span></button>
-      <button class="btn btn-pill collapse" aria-label="Orders" @click="go('history')"><Icon name="receipt" :size="20" /><span class="lbl">Orders</span></button>
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
       <button v-if="calendar" class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
     </header>
 

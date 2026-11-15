@@ -70,7 +70,7 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
     <header class="topbar wrap">
       <button class="btn btn-round" aria-label="Back to your shipment" @click="go(senderHome())"><Icon name="back" /></button>
       <div class="brand keep">Calendar</div>
-      <button class="role-tag" aria-label="Sender home" @click="go(senderHome())">Sender</button>
+      <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
       <div class="month-nav">
         <button class="btn btn-round" aria-label="Previous month" @click="offset--"><Icon name="back" /></button>
@@ -78,7 +78,7 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
         <button class="btn btn-round" aria-label="Next month" @click="offset++"><Icon name="next" /></button>
       </div>
       <button class="btn btn-pill collapse" aria-label="Driver" @click="switchMode('driver')"><Icon name="truck" :size="20" /><span class="lbl">Driver</span></button>
-      <button class="btn btn-pill collapse" aria-label="Orders" @click="go('history')"><Icon name="receipt" :size="20" /><span class="lbl">Orders</span></button>
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 
     <div class="body">

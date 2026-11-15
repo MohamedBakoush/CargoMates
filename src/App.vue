@@ -17,6 +17,7 @@ import DriverPickup from './views/DriverPickup.vue'
 import DriverTracking from './views/DriverTracking.vue'
 import DriverDropoff from './views/DriverDropoff.vue'
 import Chat from './views/Chat.vue'
+import Profile from './views/Profile.vue'
 
 const VIEWS = {
   photos: Photos,
@@ -36,6 +37,8 @@ const VIEWS = {
   'd-dropoff': DriverDropoff,
   chat: Chat,
   'd-chat': Chat,
+  profile: Profile,
+  'd-profile': Profile,
 }
 
 const view = computed(() => VIEWS[state.route] || Photos)

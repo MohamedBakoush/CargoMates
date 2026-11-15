@@ -15,6 +15,7 @@ if (asDriver && pkg) driverThread(pkg) // make sure the thread exists before any
 const ready = computed(() => (asDriver ? !!pkg : !!s.booking))
 const thread = computed(() => (!ready.value ? [] : asDriver ? pkg.messages : s.messages))
 const name = computed(() => (!ready.value ? '' : asDriver ? pkg.sender : s.booking.driver))
+const rating = computed(() => (!ready.value ? null : asDriver ? pkg.senderRating : s.booking.driverRating))
 const sub = computed(() => {
   if (!ready.value) return ''
   return asDriver ? `Sender · ${pkg.from} → ${pkg.to}` : `Your driver · ${s.from} → ${s.to.name}`
@@ -62,7 +63,7 @@ function back() {
       <button class="btn btn-round" aria-label="Back" @click="back"><Icon name="back" /></button>
       <span class="avatar">{{ name[0] }}</span>
       <div class="who">
-        <span class="who-name">{{ name }}</span>
+        <span class="who-name">{{ name }} <span v-if="rating" class="star">★ {{ rating.toFixed(1) }}</span></span>
         <span class="who-sub">{{ sub }}</span>
       </div>
     </header>
@@ -95,6 +96,7 @@ function back() {
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: #EDE7DD; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; flex: none; }
 .who { display: flex; flex-direction: column; min-width: 0; }
 .who-name { font-size: 17px; font-weight: 700; }
+.star { color: var(--accent); font-size: 14px; font-weight: 600; }
 .who-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .thread { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 720px; margin: 0 auto; }

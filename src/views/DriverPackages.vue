@@ -47,6 +47,7 @@ function statusClass(s) {
       <div class="brand">CargoMates</div>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('d-profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
       <button class="btn btn-pill" @click="switchMode('sender')"><Icon name="back" :size="18" />Sender</button>
     </header>
 
@@ -76,7 +77,7 @@ function statusClass(s) {
           <div class="pkg-info">
             <span class="pkg-route">{{ row.pkg.from }} → {{ row.pkg.to }}</span>
             <span class="pkg-what">{{ row.pkg.what }} · {{ row.pkg.weight }}</span>
-            <span class="pkg-price">{{ kr(row.pkg.price) }} <span class="pkg-sender">· from {{ row.pkg.sender }}</span></span>
+            <span class="pkg-price">{{ kr(row.pkg.price) }} <span class="pkg-sender">· {{ row.pkg.sender }} <span class="star">★ {{ row.pkg.senderRating.toFixed(1) }}</span></span></span>
             <span v-if="row.detour !== null" class="detour" :class="{ fit: row.detour <= 40 }">
               {{ row.detour <= 40 ? 'On your way' : `+${row.detour} km detour` }}
             </span>
@@ -163,6 +164,7 @@ function statusClass(s) {
 .pkg-route { font-size: 17px; font-weight: 600; }
 .pkg-what { font-size: 15px; color: var(--muted); }
 .pkg-sender { font-size: 14px; font-weight: 400; color: var(--muted); }
+.star { color: var(--accent); font-weight: 600; }
 .pkg-est { font-size: 13px; color: var(--navy); font-weight: 500; }
 .pkg-price { font-size: 17px; font-weight: 700; }
 .pkg-info .status-badge { align-self: flex-start; }

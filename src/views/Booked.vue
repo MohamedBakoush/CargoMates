@@ -33,7 +33,7 @@ async function share() {
     <template v-if="s.booking">
       <div class="headline">
         <span class="ok"><Icon name="check" :size="26" :stroke="2.4" /></span>
-        <h1 class="h1">Booked with {{ s.booking.driver }}</h1>
+        <h1 class="h1">Booked with {{ s.booking.driver }} <span v-if="s.booking.driverRating" class="star">★ {{ s.booking.driverRating }}</span></h1>
       </div>
 
       <div class="card timeline">
@@ -86,6 +86,7 @@ async function share() {
 </template>
 
 <style scoped>
+.star { color: var(--accent); font-size: 0.6em; white-space: nowrap; }
 .headline { display: flex; align-items: center; gap: 14px; }
 .ok { width: 52px; height: 52px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex: none; }
 .name { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

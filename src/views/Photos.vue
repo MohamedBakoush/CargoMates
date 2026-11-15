@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, addPhotos, removePhoto, packageLabel } from '../store.js'
+import { state, go, addPhotos, removePhoto, packageLabel, senderHome } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
 import Guarantees from '../components/Guarantees.vue'
@@ -48,6 +48,14 @@ const totalVol = computed(() => {
 
 <template>
   <PageLayout>
+    <button v-if="s.booking && s.status !== 'draft'" class="card active-card" @click="go(senderHome())">
+      <span class="active-main">
+        <span class="active-title">{{ s.from }} → {{ s.to.name }}</span>
+        <span class="muted">{{ s.status === 'paid' ? 'Delivered and paid' : 'Shipment in progress' }} · {{ s.booking.driver }}</span>
+      </span>
+      <span class="active-open">Open</span>
+    </button>
+
     <template v-if="!s.photos.length">
       <h1 class="h1">Send anything. We pick it up at your door.</h1>
       <p class="sub">Start with a photo of each package and we estimate the size.</p>
@@ -133,6 +141,11 @@ const totalVol = computed(() => {
 </template>
 
 <style scoped>
+.active-card { width: 100%; border: 1.5px solid var(--navy); text-align: left; display: flex; align-items: center; gap: 12px; min-height: 68px; }
+.active-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+.active-title { font-size: 17px; font-weight: 600; }
+.active-open { font-size: 16px; font-weight: 600; text-decoration: underline; }
+
 .tile { min-height: 220px; border: 2px dashed var(--line-strong); border-radius: 28px; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 15px; padding: 20px; }
 .tile.over { border-color: var(--accent); background: #FFF7EF; }
 .circle { width: 76px; height: 76px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; }

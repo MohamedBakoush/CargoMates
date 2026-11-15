@@ -55,7 +55,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
           </div>
           <div class="detail-cell">
             <span class="detail-label">Sender</span>
-            <span class="detail-value">{{ pkg.sender }}</span>
+            <span class="detail-value">{{ pkg.sender }} <span class="star">★ {{ pkg.senderRating.toFixed(1) }}</span></span>
           </div>
         </div>
 
@@ -179,6 +179,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 
 .contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .contact-row .btn { min-height: 52px; padding: 0 10px; font-size: 15px; }
+.star { color: var(--accent); font-weight: 600; }
 .note-bar { background: #FFF8E1; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 12px 12px 0; font-size: 15px; }
 
 .bid-panel { display: flex; flex-direction: column; gap: 14px; }
