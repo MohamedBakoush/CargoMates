@@ -27,7 +27,7 @@ function confirm() {
   <div class="page" v-if="pkg">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-package')"><Icon name="back" /></button>
-      <div class="brand">CargoMates</div>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
     </header>

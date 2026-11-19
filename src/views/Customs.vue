@@ -36,7 +36,7 @@ function onFile(e) {
       <input v-model="s.contents" class="word" :class="{ empty: !s.contents }" placeholder="what" aria-label="What is inside"
              :style="{ width: Math.max(150, s.contents.length * 17 + 40) + 'px' }">
       worth
-      <input v-model="s.value" class="word" :class="{ empty: !s.value }" placeholder="5 000 kr" inputmode="numeric" aria-label="Total value"
+      <input v-model="s.value" class="word" :class="{ empty: !s.value }" placeholder="€500" inputmode="numeric" aria-label="Total value"
              :style="{ width: Math.max(150, String(s.value).length * 17 + 40) + 'px' }">,
       and it is a
       <Picker v-model="s.kind" :options="KINDS" title="What kind of shipment?" />.

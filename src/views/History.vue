@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, kr, startNew, senderHome, allOrders, payOrder } from '../store.js'
+import { state, go, fmtDay, eur, startNew, senderHome, allOrders, payOrder, payLabel } from '../store.js'
 import RouteMap from '../components/RouteMap.vue'
 import Icon from '../components/Icon.vue'
 
@@ -48,7 +48,7 @@ function statusClass(s) {
   <div class="page">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go(senderHome())"><Icon name="back" /></button>
-      <div class="brand">CargoMates</div>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
       <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
@@ -75,7 +75,7 @@ function statusClass(s) {
                 <span class="receipt-what">{{ order.what }} · {{ fmtDay(order.pickup) }}</span>
               </div>
               <div class="receipt-right">
-                <span class="receipt-price">{{ kr(order.price || 0) }}</span>
+                <span class="receipt-price">{{ eur(order.price || 0) }}</span>
                 <span class="receipt-status" :class="statusClass(order.status)">{{ statusLabel(order.status) }}</span>
               </div>
               <Icon :name="expandedId === order.id ? 'chevron-down' : 'next'" :size="20" />
@@ -137,7 +137,7 @@ function statusClass(s) {
                 <div class="receipt-total">
                   <div class="receipt-row">
                     <span>Shipping</span>
-                    <span>{{ kr(order.price || 0) }}</span>
+                    <span>{{ eur(order.price || 0) }}</span>
                   </div>
                   <div v-if="order.abroad" class="receipt-row muted">
                     <span>Customs & cover</span>
@@ -145,18 +145,18 @@ function statusClass(s) {
                   </div>
                   <div class="receipt-row total-row">
                     <span>Total</span>
-                    <span>{{ kr(order.price || 0) }}</span>
+                    <span>{{ eur(order.price || 0) }}</span>
                   </div>
                 </div>
 
                 <div v-if="order.paidDate" class="receipt-footer">
-                  <span class="muted">Paid {{ fmtDay(order.paidDate) }} via {{ order.payMethod || 'Vipps' }}</span>
+                  <span class="muted">Paid {{ fmtDay(order.paidDate) }} via {{ payLabel(order.payMethod) }}</span>
                 </div>
                 <div v-else class="pending">
                   <RouteMap :from="order.from || 'Drammen'" :to="order.to || order.title" :progress="pending(order).progress" />
                   <div class="pending-text">{{ pending(order).text }}</div>
                   <template v-if="order.status === 'arrived'">
-                    <button class="btn btn-primary" @click="payNow(order)">Pay {{ kr(order.price || 0) }}</button>
+                    <button class="btn btn-primary" @click="payNow(order)">Pay {{ eur(order.price || 0) }}</button>
                   </template>
                   <template v-else>
                     <div class="pending-actions">

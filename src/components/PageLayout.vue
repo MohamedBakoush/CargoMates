@@ -23,7 +23,7 @@ const stepNow = computed(() => {
   <div class="page">
     <header class="topbar">
       <button v-if="back" class="btn btn-round" aria-label="Back" @click="go(back)"><Icon name="back" /></button>
-      <div class="brand">CargoMates</div>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
       <button class="btn btn-pill collapse" aria-label="Driver" @click="switchMode('driver')"><Icon name="truck" :size="20" /><span class="lbl">Driver</span></button>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, kr, slotText, setStatus } from '../store.js'
+import { state, go, fmtDay, eur, slotText, setStatus } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
 
@@ -77,7 +77,7 @@ async function share() {
 
     <template #actions>
       <div v-if="s.booking" class="info">
-        <span class="big">{{ kr(s.booking.price) }}</span>
+        <span class="big">{{ eur(s.booking.price) }}</span>
         <span class="small">Nothing to pay until it arrives</span>
       </div>
       <button class="btn btn-primary" :disabled="!s.booking" @click="track">Track shipment</button>

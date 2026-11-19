@@ -24,6 +24,7 @@ a { color: var(--navy); }
 .topbar, .body, .actionbar { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
 .topbar { flex: none; display: flex; align-items: center; gap: 14px; padding-block: 14px; min-height: 80px; }
 .brand { font-weight: 700; font-size: 20px; }
+button.brand { border: 0; background: none; padding: 0; color: inherit; min-height: 44px; }
 .spacer { flex: 1; }
 .body { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; gap: 32px; padding-block: 0 20px; overflow-y: auto; align-items: stretch; }
 /* single-column pages (driver side) */

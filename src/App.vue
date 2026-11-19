@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { state } from './store.js'
 import Photos from './views/Photos.vue'
+import Landing from './views/Landing.vue'
 import Details from './views/Details.vue'
 import Customs from './views/Customs.vue'
 import Delivery from './views/Delivery.vue'
@@ -20,6 +21,7 @@ import Chat from './views/Chat.vue'
 import Profile from './views/Profile.vue'
 
 const VIEWS = {
+  home: Landing,
   photos: Photos,
   details: Details,
   customs: Customs,
@@ -41,7 +43,7 @@ const VIEWS = {
   'd-profile': Profile,
 }
 
-const view = computed(() => VIEWS[state.route] || Photos)
+const view = computed(() => VIEWS[state.route] || Landing)
 </script>
 
 <template>

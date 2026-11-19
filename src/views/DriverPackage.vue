@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, kr, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS } from '../store.js'
+import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS } from '../store.js'
 import Icon from '../components/Icon.vue'
 import RouteMap from '../components/RouteMap.vue'
 
@@ -23,7 +23,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
   <div class="page" v-if="pkg">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-packages')"><Icon name="back" /></button>
-      <div class="brand">CargoMates</div>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
     </header>
@@ -72,10 +72,10 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
       <!-- Bid panel (for available packages) -->
       <div v-if="pkg.status === 'available'" class="bid-panel card">
         <h2 class="bid-title">Place your bid</h2>
-        <p class="muted">Suggested: {{ kr(pkg.price) }}</p>
+        <p class="muted">Suggested: {{ eur(pkg.price) }}</p>
 
         <div class="bid-row">
-          <label class="bid-label">Your price (kr)</label>
+          <label class="bid-label">Your price (€)</label>
           <input v-model="bidAmount" type="number" inputmode="numeric" class="bid-input" :placeholder="String(pkg.price)" />
         </div>
 
@@ -104,14 +104,14 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
         </div>
 
         <button class="btn btn-driver" @click="placeBid">
-          <Icon name="truck" :size="20" /> Bid {{ kr(parseInt(bidAmount) || pkg.price) }}
+          <Icon name="truck" :size="20" /> Send bid {{ eur(parseInt(bidAmount) || pkg.price) }}
         </button>
       </div>
 
       <!-- Bid sent -->
       <div v-else-if="pkg.status === 'bid-sent'" class="status-panel card">
         <div class="pulse-ring" />
-        <h2>Bid sent — {{ kr(pkg.myBid) }}</h2>
+        <h2>Bid sent — {{ eur(pkg.myBid) }}</h2>
         <p class="muted">Waiting for the sender to accept…</p>
         <div class="est-summary">
           <span class="est-chip"><Icon name="calendar" :size="14" /> {{ pkg.estPickupLabel }}</span>

@@ -1,5 +1,5 @@
 <script setup>
-import { state, DELIVERY, PICKUP_SLOTS, priceFor, price, kr, isAbroad, book } from '../store.js'
+import { state, DELIVERY, PICKUP_SLOTS, priceFor, price, eur, isAbroad, book } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Guarantees from '../components/Guarantees.vue'
 
@@ -28,7 +28,7 @@ const s = state.shipment
           <span class="hint">{{ d.hint }}</span>
           <span v-if="d.tag" class="tag">{{ d.tag }}</span>
         </span>
-        <span class="price">{{ kr(priceFor(d.id)) }}</span>
+        <span class="price">{{ eur(priceFor(d.id)) }}</span>
         <span class="radio" />
       </button>
     </section>
@@ -37,7 +37,7 @@ const s = state.shipment
 
     <template #actions>
       <div class="info">
-        <span class="big">about {{ kr(price) }}</span>
+        <span class="big">about {{ eur(price) }}</span>
         <span class="small">{{ isAbroad ? 'Customs included · ' : '' }}Pay when it arrives</span>
       </div>
       <button class="btn btn-primary" @click="book">Get offers</button>

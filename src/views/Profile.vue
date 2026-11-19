@@ -2,7 +2,7 @@
 // One profile page for both sides: #profile is the sender (their orders),
 // #d-profile is the driver (their completed jobs). Each shows that person's star rating.
 import { computed } from 'vue'
-import { state, go, kr, fmtDay, PROFILES, allOrders } from '../store.js'
+import { state, go, eur, fmtDay, PROFILES, allOrders } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const asDriver = state.route === 'd-profile'
@@ -34,8 +34,8 @@ const rows = computed(() => {
 
 const total = computed(() => rows.value.filter((r) => r.done).reduce((sum, r) => sum + r.price, 0))
 const stats = computed(() => asDriver
-  ? [{ n: rows.value.length, label: 'Completed' }, { n: kr(total.value), label: 'Earned' }, { n: '98%', label: 'On time' }]
-  : [{ n: rows.value.length, label: 'Orders' }, { n: kr(total.value), label: 'Paid' }, { n: me.ratings, label: 'Ratings' }])
+  ? [{ n: rows.value.length, label: 'Completed' }, { n: eur(total.value), label: 'Earned' }, { n: '98%', label: 'On time' }]
+  : [{ n: rows.value.length, label: 'Orders' }, { n: eur(total.value), label: 'Paid' }, { n: me.ratings, label: 'Ratings' }])
 
 function openOrder(id) {
   state.openOrder = id
@@ -87,7 +87,7 @@ function back() {
             <span class="muted row-sub">{{ r.sub }}</span>
           </span>
           <span class="row-right">
-            <span class="row-price">{{ kr(r.price) }}</span>
+            <span class="row-price">{{ eur(r.price) }}</span>
             <span v-if="r.badge" class="status-badge" :class="r.done ? 'st-done' : 'st-pending'">{{ r.badge }}</span>
             <span v-else-if="r.rated" class="row-stars">{{ '★'.repeat(r.rated) }}</span>
             <span v-else class="muted row-sub">Not rated yet</span>

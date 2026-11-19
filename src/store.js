@@ -94,9 +94,9 @@ export const DELIVERY = [
 
 export const GUARANTEES = [
   { id: 'date', icon: 'calendar', title: 'Guaranteed delivery date', desc: 'Every offer comes with a date we commit to.' },
-  { id: 'late', icon: 'clock', title: 'kr 450 back if we are late', desc: 'Paid automatically if delivery is even one day late.' },
+  { id: 'late', icon: 'clock', title: '€40 back if we are late', desc: 'Paid automatically if delivery is even one day late.' },
   { id: 'replace', icon: 'refresh', title: 'Replacement truck in 48 hours', desc: 'If the carrier cannot make it, we find another one.' },
-  { id: 'noshow', icon: 'shield', title: 'Full refund + kr 300 for a no-show', desc: 'If nobody picks up your goods, you get everything back plus credit.' },
+  { id: 'noshow', icon: 'shield', title: 'Full refund + €25 for a no-show', desc: 'If nobody picks up your goods, you get everything back plus credit.' },
   { id: 'contact', icon: 'headphones', title: 'One contact for everything', desc: 'Damage, loss or delay: one person at CargoMates handles it.' },
   { id: 'window', icon: 'door', title: 'Half-day pickup slot', desc: 'Morning or afternoon, so you do not wait in all day.' },
 ]
@@ -120,43 +120,43 @@ const DRIVERS = [
 const MOCK_PACKAGES = [
   {
     id: 'pkg-1', from: 'Oslo', to: 'Bergen', what: '2 medium boxes', size: 'medium', count: 2,
-    sender: 'Kari N.', senderRating: 4.9, price: 1650, km: 460, pickup: null, status: 'available',
+    sender: 'Kari N.', senderRating: 4.9, price: 145, km: 460, pickup: null, status: 'available',
     pickupAddr: 'Storgata 12, 0155 Oslo', dropAddr: 'Torgallmenningen 4, 5014 Bergen',
     weight: '10-50 kg', note: 'Fragile — contains ceramics',
   },
   {
     id: 'pkg-2', from: 'Drammen', to: 'Kristiansand', what: '1 pallet', size: 'pallet', count: 1,
-    sender: 'Erik O.', senderRating: 4.7, price: 2280, km: 290, pickup: null, status: 'available',
+    sender: 'Erik O.', senderRating: 4.7, price: 200, km: 290, pickup: null, status: 'available',
     pickupAddr: 'Grønland 2, 3045 Drammen', dropAddr: 'Markens gate 20, 4611 Kristiansand',
     weight: '50-100 kg', note: '',
   },
   {
     id: 'pkg-3', from: 'Stavanger', to: 'Trondheim', what: '3 large items', size: 'large', count: 3,
-    sender: 'Maja L.', senderRating: 5.0, price: 3410, km: 830, pickup: null, status: 'available',
+    sender: 'Maja L.', senderRating: 5.0, price: 295, km: 830, pickup: null, status: 'available',
     pickupAddr: 'Klubbgata 8, 4013 Stavanger', dropAddr: 'Nordre gate 15, 7011 Trondheim',
     weight: '100+ kg', note: 'Furniture — needs blankets',
   },
   {
     id: 'pkg-4', from: 'Kongsberg', to: 'Oslo', what: '1 small box', size: 'small', count: 1,
-    sender: 'Thomas R.', senderRating: 4.6, price: 480, km: 80, pickup: null, status: 'available',
+    sender: 'Thomas R.', senderRating: 4.6, price: 40, km: 80, pickup: null, status: 'available',
     pickupAddr: 'Kirkegata 3, 3611 Kongsberg', dropAddr: 'Karl Johans gate 22, 0159 Oslo',
     weight: 'Under 10 kg', note: 'Electronics — handle with care',
   },
   {
     id: 'pkg-5', from: 'Amsterdam', to: 'Copenhagen', what: '2 pallets', size: 'pallet', count: 2,
-    sender: 'Sanne D.', senderRating: 4.8, price: 6900, km: 780, pickup: null, status: 'available',
+    sender: 'Sanne D.', senderRating: 4.8, price: 600, km: 780, pickup: null, status: 'available',
     pickupAddr: 'Herengracht 120, 1015 Amsterdam', dropAddr: 'Vesterbrogade 40, 1620 Copenhagen',
     weight: '100+ kg', note: '',
   },
   {
     id: 'pkg-6', from: 'Paris', to: 'Berlin', what: '6 medium boxes', size: 'medium', count: 6,
-    sender: 'Luc M.', senderRating: 4.9, price: 5400, km: 1050, pickup: null, status: 'available',
+    sender: 'Luc M.', senderRating: 4.9, price: 470, km: 1050, pickup: null, status: 'available',
     pickupAddr: 'Rue de Rivoli 80, 75004 Paris', dropAddr: 'Torstraße 60, 10119 Berlin',
     weight: '50-100 kg', note: 'Trade-fair materials',
   },
   {
     id: 'pkg-7', from: 'Hamburg', to: 'Malmö', what: '1 large item', size: 'large', count: 1,
-    sender: 'Jonas W.', senderRating: 4.7, price: 3100, km: 480, pickup: null, status: 'available',
+    sender: 'Jonas W.', senderRating: 4.7, price: 270, km: 480, pickup: null, status: 'available',
     pickupAddr: 'Mönckebergstraße 7, 20095 Hamburg', dropAddr: 'Stortorget 2, 211 22 Malmö',
     weight: '10-50 kg', note: '',
   },
@@ -173,13 +173,13 @@ function seedDriverPast() {
   const d = new Date()
   const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
   return [
-    { id: 'past-1', from: 'Oslo', to: 'Gothenburg', what: '2 pallets', price: 3900, date: iso(-4), sender: 'Hanne S.', rated: 5 },
-    { id: 'past-2', from: 'Bergen', to: 'Stavanger', what: '4 medium boxes', price: 1450, date: iso(-11), sender: 'Ola T.', rated: 5 },
-    { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 2700, date: iso(-19), sender: 'Mette K.', rated: 4 },
+    { id: 'past-1', from: 'Oslo', to: 'Gothenburg', what: '2 pallets', price: 340, date: iso(-4), sender: 'Hanne S.', rated: 5 },
+    { id: 'past-2', from: 'Bergen', to: 'Stavanger', what: '4 medium boxes', price: 125, date: iso(-11), sender: 'Ola T.', rated: 5 },
+    { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 235, date: iso(-19), sender: 'Mette K.', rated: 4 },
   ]
 }
 
-const STORAGE_KEY = 'cargomates-v1'
+const STORAGE_KEY = 'cargomates-v2' // v2: prices in euros, Bizum instead of Vipps
 
 function freshShipment() {
   return {
@@ -204,7 +204,7 @@ function freshShipment() {
     driverNote: '',
     messages: [], // chat with the driver: { id, from: 'sender' | 'driver' | 'system', text, time }
     booking: null,
-    payMethod: 'vipps',
+    payMethod: 'bizum',
   }
 }
 
@@ -229,6 +229,7 @@ export const state = reactive({
   driverPackages: MOCK_PACKAGES.map(p => ({ ...p })),
   driverActive: null, // the package the driver is currently working on
   driverPast: seedDriverPast(),
+  driverNotice: null, // banner on the driver dashboard: { kind: 'sent' | 'accepted', text, pkgId }
   openOrder: null, // order to show expanded when Orders opens
   // where the driver is going, and which countries they take jobs in (empty = all of Europe)
   driverRoute: { from: '', to: '', countries: [], ...(saved && saved.driverRoute ? saved.driverRoute : {}) },
@@ -246,8 +247,8 @@ function seedHistory() {
   const d = new Date()
   const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
   return [
-    { id: 'h1', title: 'Oslo', from: 'Drammen', to: 'Oslo', toCountry: 'Norway', what: '1 pallet', size: 'pallet', count: 1, pickup: iso(-9), arrive: iso(-8), driver: 'Ingrid S.', hub: 'CargoMates hub Oslo', price: 1250, note: '', payMethod: 'vipps', paidDate: iso(-7), status: 'paid', abroad: false, code: '4821' },
-    { id: 'h2', title: 'Gothenburg', from: 'Drammen', to: 'Gothenburg', toCountry: 'Sweden', what: '3 large items', size: 'large', count: 3, pickup: iso(3), arrive: iso(4), driver: 'Pieter V.', hub: null, price: 2840, note: 'Leave at the loading dock', payMethod: 'card', paidDate: null, status: 'booked', abroad: true, code: '7193' },
+    { id: 'h1', title: 'Oslo', from: 'Drammen', to: 'Oslo', toCountry: 'Norway', what: '1 pallet', size: 'pallet', count: 1, pickup: iso(-9), arrive: iso(-8), driver: 'Ingrid S.', hub: 'CargoMates hub Oslo', price: 110, note: '', payMethod: 'bizum', paidDate: iso(-7), status: 'paid', abroad: false, code: '4821' },
+    { id: 'h2', title: 'Gothenburg', from: 'Drammen', to: 'Gothenburg', toCountry: 'Sweden', what: '3 large items', size: 'large', count: 3, pickup: iso(3), arrive: iso(4), driver: 'Pieter V.', hub: null, price: 245, note: 'Leave at the loading dock', payMethod: 'card', paidDate: null, status: 'booked', abroad: true, code: '7193' },
   ]
 }
 
@@ -256,21 +257,26 @@ function seedHistory() {
 // ---------------------------------------------------------------------------
 
 const ROUTES = [
-  'photos', 'details', 'customs', 'delivery', 'bidding', 'booked', 'onway', 'arrived', 'calendar', 'history',
+  'home', 'photos', 'details', 'customs', 'delivery', 'bidding', 'booked', 'onway', 'arrived', 'calendar', 'history',
   'd-packages', 'd-package', 'd-pickup', 'd-tracking', 'd-dropoff', 'chat', 'd-chat', 'profile', 'd-profile',
 ]
 
 function readHash() {
   const r = (location.hash || '').replace(/^#\/?/, '')
-  return ROUTES.includes(r) ? r : 'photos'
+  return ROUTES.includes(r) ? r : 'home'
 }
 
 state.route = readHash()
 window.addEventListener('hashchange', () => { state.route = readHash() })
+window.addEventListener('popstate', () => { state.route = readHash() })
 
 export function go(route) {
   state.route = route
-  try { if (location.hash !== '#' + route) location.hash = route } catch (e) { /* hash not allowed, state still moves */ }
+  try {
+    // The landing page lives at the bare URL, everything else in the hash
+    if (route === 'home') { if (location.hash) history.pushState(null, '', location.pathname + location.search) }
+    else if (location.hash !== '#' + route) location.hash = route
+  } catch (e) { /* hash not allowed, state still moves */ }
 }
 
 // ---------------------------------------------------------------------------
@@ -302,16 +308,26 @@ export function priceFor(deliveryId) {
   const km = s.to ? s.to.km : 300
   const n = Math.max(s.count, 1)
   const d = DELIVERY.find((o) => o.id === deliveryId) || DELIVERY[1]
-  let p = (180 + km * 0.85) * sizeObj.value.factor * Math.pow(n, 0.8)
+  let p = (16 + km * 0.075) * sizeObj.value.factor * Math.pow(n, 0.8)
   p *= arrivalObj.value.factor * d.factor
-  if (isAbroad.value) p += 350 // customs papers
-  return Math.round(p / 10) * 10
+  if (isAbroad.value) p += 30 // customs papers
+  return Math.max(5, Math.round(p / 5) * 5)
 }
 
 export const price = computed(() => priceFor(state.shipment.delivery))
 
-export function kr(n) {
-  return 'kr ' + n.toLocaleString('nb-NO').replace(/,/g, ' ')
+const EUR = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+export function eur(n) {
+  return EUR.format(n)
+}
+
+export const PAY_METHODS = [
+  { id: 'bizum', label: 'Bizum' },
+  { id: 'card', label: 'Card' },
+  { id: 'invoice', label: 'Invoice' },
+]
+export function payLabel(id) {
+  return (PAY_METHODS.find((m) => m.id === id) || PAY_METHODS[0]).label
 }
 
 // ---------------------------------------------------------------------------
@@ -421,7 +437,7 @@ function startBidding() {
     if (i >= count || s.status !== 'bidding') return
     const driver = shuffled[i % shuffled.length]
     const variance = 0.85 + Math.random() * 0.3
-    const bidPrice = Math.round(basePrice * variance / 10) * 10
+    const bidPrice = Math.max(5, Math.round(basePrice * variance / 5) * 5)
     const km = s.to ? s.to.km : 300
     const lead = s.arrival === 'asap' ? 1 : s.arrival === 'week' ? 2 : 5
     const pickupDate = addDays(new Date(), lead + Math.floor(Math.random() * 2))
@@ -659,18 +675,28 @@ export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
   const locObj = PICKUP_LOCATIONS.find(l => l.id === pkg.estPickupLocation)
   pkg.estPickupLabel = timeObj ? timeObj.label : pkg.estPickupTime
   pkg.estLocationLabel = locObj ? locObj.label : pkg.estPickupLocation
+  state.driverNotice = { kind: 'sent', pkgId, text: `Bid sent: ${eur(amount)} to ${pkg.sender.replace(/\.?$/, '.')} Their answer will show under Your active jobs.` }
+  go('d-packages')
+
+  // Mock: the sender answers a few seconds later. Replace with the real notification.
   setTimeout(() => {
     if (pkg.status !== 'bid-sent') return
     pkg.status = 'accepted'
+    pkg.updated = true
     const days = { today: 0, tomorrow: 1, '2days': 2, week: 5 }[pkg.estPickupTime] || 0
     const d = new Date(); d.setDate(d.getDate() + days)
     pkg.pickup = d.toISOString().slice(0, 10)
-  }, 2000 + Math.random() * 2000)
+    state.driverNotice = { kind: 'accepted', pkgId, text: `${pkg.sender} accepted your bid for ${pkg.from} → ${pkg.to}. Pickup ${pkg.estPickupLabel.toLowerCase()}.` }
+  }, 6000 + Math.random() * 3000)
 }
 
 export function driverViewPackage(pkgId) {
   const pkg = state.driverPackages.find(p => p.id === pkgId)
-  if (pkg) { state.driverActive = pkg; go('d-package') }
+  if (!pkg) return
+  pkg.updated = false
+  if (state.driverNotice && state.driverNotice.pkgId === pkgId) state.driverNotice = null
+  state.driverActive = pkg
+  go('d-package')
 }
 
 export function driverConfirmPickup() {

@@ -1,16 +1,12 @@
 <script setup>
 import { ref } from 'vue'
-import { state, go, fmtDay, kr, pay, startNew } from '../store.js'
+import { state, go, fmtDay, eur, pay, startNew, PAY_METHODS, payLabel } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
 
 const s = state.shipment
 const reported = ref(false)
-const METHODS = [
-  { id: 'vipps', label: 'Vipps' },
-  { id: 'card', label: 'Card' },
-  { id: 'invoice', label: 'Invoice' },
-]
+const METHODS = PAY_METHODS
 </script>
 
 <template>
@@ -55,11 +51,11 @@ const METHODS = [
 
     <template #actions>
       <div class="info">
-        <span class="big">{{ s.booking ? kr(s.booking.price) : '' }}</span>
+        <span class="big">{{ s.booking ? eur(s.booking.price) : '' }}</span>
         <span class="small">{{ s.to ? `${s.from} → ${s.to.name}` : '' }}</span>
       </div>
       <button v-if="s.status !== 'paid'" class="btn btn-primary" :disabled="!s.booking || reported" @click="pay">
-        Pay with {{ METHODS.find((m) => m.id === s.payMethod).label }}
+        Pay with {{ payLabel(s.payMethod) }}
       </button>
       <template v-else>
         <button class="btn" @click="go('history')">Receipt</button>

@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { state, kr, fmtDay, slotText, selectBid, cancelSelection, confirmBid, cancelBidding } from '../store.js'
+import { state, eur, fmtDay, slotText, selectBid, cancelSelection, confirmBid, cancelBidding } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Guarantees from '../components/Guarantees.vue'
 
@@ -29,7 +29,7 @@ const selected = computed(() => s.selectedBid)
             <span class="bid-name">{{ bid.driver.name }}</span>
             <span class="bid-meta"><span class="bid-stars">★ {{ bid.driver.rating }}</span> · {{ bid.driver.trips }} trips</span>
           </span>
-          <span class="bid-price">{{ kr(bid.price) }}</span>
+          <span class="bid-price">{{ eur(bid.price) }}</span>
         </span>
         <span class="bid-dates">
           <span>Pickup <b>{{ fmtDay(bid.pickupDate) }}</b></span>
@@ -48,14 +48,14 @@ const selected = computed(() => s.selectedBid)
       <div v-if="selected" class="sheet-backdrop" @click.self="cancelSelection">
         <div class="sheet" role="dialog" aria-label="Accept this offer">
           <div class="sheet-handle" />
-          <p class="sheet-title">{{ selected.driver.name }} · {{ kr(selected.price) }}</p>
+          <p class="sheet-title">{{ selected.driver.name }} · {{ eur(selected.price) }}</p>
           <div class="sum">
             <div>Pickup <b>{{ fmtDay(selected.pickupDate) }}</b>, {{ slotText(s.pickupSlot) }}</div>
             <div>Guaranteed delivery by <b>{{ fmtDay(selected.deliverBy) }}</b></div>
           </div>
           <textarea v-model="s.driverNote" class="note-input" rows="2"
                     placeholder="Note to the driver (optional), e.g. ring the bell, 3rd floor" />
-          <button class="btn btn-primary" @click="confirmBid">Accept {{ kr(selected.price) }}</button>
+          <button class="btn btn-primary" @click="confirmBid">Accept {{ eur(selected.price) }}</button>
           <button class="btn-ghost" @click="cancelSelection">Back to offers</button>
         </div>
       </div>

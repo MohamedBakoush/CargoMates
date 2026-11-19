@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { state, go, SIZES, ARRIVALS, isAbroad, priceFor, kr, packageLabel, DELIVERY } from '../store.js'
+import { state, go, SIZES, ARRIVALS, isAbroad, priceFor, eur, packageLabel, DELIVERY } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Picker from '../components/Picker.vue'
 import AddressField from '../components/AddressField.vue'
@@ -44,7 +44,7 @@ function next() {
 
     <template #actions>
       <div class="info">
-        <span class="big">from {{ kr(cheapest) }}</span>
+        <span class="big">from {{ eur(cheapest) }}</span>
         <span class="small">{{ s.to ? `${s.to.name}, ${s.to.country}` : 'Pick a destination to see trucks on your route' }}</span>
       </div>
       <button class="btn btn-primary" :disabled="!s.to" @click="next">Continue</button>
