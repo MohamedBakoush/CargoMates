@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS } from '../store.js'
+import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive } from '../store.js'
 import Icon from '../components/Icon.vue'
 import RouteMap from '../components/RouteMap.vue'
 
@@ -16,7 +16,8 @@ function placeBid() {
 }
 
 const canPickup = computed(() => pkg.value && pkg.value.status === 'accepted')
-const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
+const inTransit = computed(() => pkg.value && pkg.value.status === 'picked-up')
+const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destination')
 </script>
 
 <template>
@@ -38,7 +39,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
           </div>
         </div>
 
-        <RouteMap :from="pkg.from" :to="pkg.to" :progress="pkg.status === 'picked-up' ? 40 : pkg.status === 'delivered' ? 100 : null" />
+        <RouteMap :from="pkg.from" :to="pkg.to" :progress="transitPercent(pkg)" />
 
         <div class="detail-grid">
           <div class="detail-cell">
@@ -59,7 +60,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
           </div>
         </div>
 
-        <div v-if="canPickup || canDropoff" class="contact-row">
+        <div v-if="canPickup || inTransit || canDropoff" class="contact-row">
           <button class="btn" @click="go('d-chat')">Message {{ pkg.sender }}</button>
           <a class="btn" href="tel:"><Icon name="phone" :size="18" />Call {{ pkg.sender }}</a>
         </div>
@@ -130,11 +131,21 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
         </div>
       </div>
 
-      <!-- Picked up → tracking & dropoff -->
-      <div v-else-if="canDropoff" class="status-panel card">
+      <!-- Picked up, driving -->
+      <div v-else-if="inTransit" class="status-panel card">
         <div class="check-circle transit-circle"><Icon name="truck" :size="28" /></div>
-        <h2>In transit</h2>
-        <p class="muted">Tracking: {{ pkg.trackingCode }}</p>
+        <h2>On the way to {{ pkg.to }}</h2>
+        <p class="muted">About {{ kmLeft(pkg) }} km left · tracking {{ pkg.trackingCode }}</p>
+        <span class="transit-bar"><span class="transit-fill" :style="{ width: transitPercent(pkg) + '%' }" /></span>
+        <p class="muted">Drop-off unlocks when you reach {{ pkg.dropAddr }}.</p>
+        <button class="btn-ghost" @click="driverArrive(pkg)">Prototype: arrive now</button>
+      </div>
+
+      <!-- Arrived → drop-off -->
+      <div v-else-if="canDropoff" class="status-panel card">
+        <div class="check-circle done-circle"><Icon name="pin" :size="28" /></div>
+        <h2>You have arrived</h2>
+        <p class="muted">Confirm drop-off at {{ pkg.dropAddr }}.</p>
       </div>
 
       <!-- Delivered -->
@@ -145,18 +156,20 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
       </div>
     </div>
 
-    <footer class="actionbar" v-if="canPickup || canDropoff">
+    <footer class="actionbar" v-if="canPickup || inTransit || canDropoff">
       <div class="info">
         <span class="big" v-if="canPickup">Ready for pickup</span>
-        <span class="big" v-if="canDropoff">{{ pkg.trackingCode }}</span>
+        <span class="big" v-else-if="inTransit">In transit · {{ kmLeft(pkg) }} km left</span>
+        <span class="big" v-else>Arrived</span>
         <span class="small">{{ pkg.from }} → {{ pkg.to }}</span>
       </div>
       <button v-if="canPickup" class="btn btn-driver" @click="go('d-pickup')">
         <Icon name="camera" :size="20" /> Confirm pickup
       </button>
-      <button v-if="canDropoff" class="btn btn-pill" @click="driverGoTracking">
-        <Icon name="printer" :size="18" /> Print label
+      <button v-if="inTransit || canDropoff" class="btn btn-pill" @click="driverGoTracking">
+        <Icon name="printer" :size="18" /> Label
       </button>
+      <button v-if="inTransit" class="btn btn-driver" disabled>Drop-off when you arrive</button>
       <button v-if="canDropoff" class="btn btn-driver" @click="go('d-dropoff')">
         <Icon name="check" :size="20" /> Confirm drop-off
       </button>
@@ -202,6 +215,10 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'picked-up')
 
 .status-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; text-align: center; }
 .status-panel h2 { margin: 0; font-size: 22px; }
+.status-panel p { margin: 0; }
+.transit-bar { display: block; width: 100%; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.transit-fill { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.9s linear; }
+.btn-driver:disabled { opacity: 0.45; cursor: not-allowed; }
 
 
 .check-circle { width: 56px; height: 56px; border-radius: 50%; background: #E8F0FF; color: #1565C0; display: flex; align-items: center; justify-content: center; }

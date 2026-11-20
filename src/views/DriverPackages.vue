@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES } from '../store.js'
+import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES, transitPercent, kmLeft } from '../store.js'
 import Icon from '../components/Icon.vue'
 import Picker from '../components/Picker.vue'
 import RouteMap from '../components/RouteMap.vue'
@@ -10,7 +10,7 @@ const m = driverMatches
 const areaOpen = ref(false)
 
 // Jobs that need the driver come first: accepted, then in transit, then bids still waiting
-const ORDER = { accepted: 0, 'picked-up': 1, 'bid-sent': 2 }
+const ORDER = { 'at-destination': 0, accepted: 0, 'picked-up': 1, 'bid-sent': 2 }
 const active = computed(() => state.driverPackages
   .filter(p => p.status in ORDER)
   .sort((a, b) => ORDER[a.status] - ORDER[b.status]))
@@ -19,7 +19,8 @@ const notice = computed(() => state.driverNotice)
 function nextStep(pkg) {
   if (pkg.status === 'bid-sent') return `Waiting for ${pkg.sender} to answer`
   if (pkg.status === 'accepted') return `Pick up ${pkg.estPickupLabel.toLowerCase()} · ${pkg.estLocationLabel.toLowerCase()}`
-  return `Deliver to ${pkg.to} · ${pkg.trackingCode}`
+  if (pkg.status === 'at-destination') return `At ${pkg.dropAddr} · confirm drop-off`
+  return `On the way to ${pkg.to} · about ${kmLeft(pkg)} km left`
 }
 const delivered = computed(() => state.driverPackages.filter(p => p.status === 'delivered'))
 
@@ -45,10 +46,10 @@ const groups = computed(() => {
 const legs = computed(() => m.value.onRoute.map((x) => ({ from: x.pkg.from, to: x.pkg.to })))
 
 function statusLabel(s) {
-  return { 'bid-sent': 'Waiting for answer', 'accepted': 'Accepted · ready to pick up', 'picked-up': 'In transit', 'delivered': 'Delivered' }[s] || s
+  return { 'bid-sent': 'Waiting for answer', 'accepted': 'Accepted · ready to pick up', 'picked-up': 'In transit', 'at-destination': 'Arrived · confirm drop-off', 'delivered': 'Delivered' }[s] || s
 }
 function statusClass(s) {
-  return { 'bid-sent': 'st-pending', 'accepted': 'st-accepted', 'picked-up': 'st-transit', 'delivered': 'st-done' }[s] || ''
+  return { 'bid-sent': 'st-pending', 'accepted': 'st-accepted', 'picked-up': 'st-transit', 'at-destination': 'st-done', 'delivered': 'st-done' }[s] || ''
 }
 </script>
 
@@ -64,7 +65,7 @@ function statusClass(s) {
 
     <div class="body col">
       <div v-if="notice" class="notice" :class="notice.kind" role="status">
-        <span class="notice-icon"><Icon :name="notice.kind === 'accepted' ? 'check' : 'clock'" :size="20" :stroke="2.2" /></span>
+        <span class="notice-icon"><Icon :name="notice.icon || (notice.kind === 'accepted' ? 'check' : 'clock')" :size="20" :stroke="2.2" /></span>
         <span class="notice-text">{{ notice.text }}</span>
         <button class="notice-close" aria-label="Dismiss" @click="state.driverNotice = null"><Icon name="close" :size="18" /></button>
       </div>
@@ -73,12 +74,13 @@ function statusClass(s) {
         <h2 class="section-title">Your active jobs <span class="count">{{ active.length }}</span></h2>
         <button v-for="pkg in active" :key="pkg.id" class="pkg-card job" :class="{ updated: pkg.updated }" @click="driverViewPackage(pkg.id)">
           <div class="pkg-icon" :class="pkg.status === 'bid-sent' ? 'wait-icon' : 'active-icon'">
-            <Icon :name="pkg.status === 'bid-sent' ? 'clock' : 'truck'" :size="24" />
+            <Icon :name="{ 'bid-sent': 'clock', 'at-destination': 'pin' }[pkg.status] || 'truck'" :size="24" />
           </div>
           <div class="pkg-info">
             <span class="pkg-route">{{ pkg.from }} → {{ pkg.to }}</span>
             <span class="pkg-what">{{ pkg.what }} · your bid {{ eur(pkg.myBid) }}</span>
             <span class="job-next">{{ nextStep(pkg) }}</span>
+            <span v-if="pkg.status === 'picked-up'" class="job-bar"><span class="job-fill" :style="{ width: transitPercent(pkg) + '%' }" /></span>
             <span class="status-badge" :class="statusClass(pkg.status)">
               <span v-if="pkg.status === 'bid-sent'" class="wait-dot" />{{ statusLabel(pkg.status) }}
             </span>
@@ -198,11 +200,14 @@ function statusClass(s) {
 .notice-icon { flex: none; padding-top: 1px; }
 .notice-text { flex: 1; min-width: 0; font-weight: 500; }
 .notice-close { flex: none; width: 36px; height: 36px; margin: -6px -4px -6px 0; border: 0; background: none; color: inherit; display: flex; align-items: center; justify-content: center; }
-@keyframes notice-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+/* slide only: if the animation stalls the banner must still be readable */
+@keyframes notice-in { from { transform: translateY(-8px); } to { transform: none; } }
 
 .wait-icon { background: #FFF3E0; color: #E65100; }
 .job-next { font-size: 14px; font-weight: 600; color: var(--ink); }
 .job.updated { border: 2.5px solid #2B8A3E; padding: 13px 15px; }
 .status-badge { display: inline-flex; align-items: center; gap: 6px; }
+.job-bar { display: block; height: 6px; margin: 2px 0; border-radius: 3px; background: var(--line); overflow: hidden; }
+.job-fill { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.9s linear; }
 .wait-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s ease-in-out infinite; }
 </style>

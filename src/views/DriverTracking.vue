@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { state, go } from '../store.js'
+import { state, go, driverBackToJobs } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const pkg = computed(() => state.driverActive)
@@ -74,13 +74,13 @@ const print = () => window.print()
     <footer class="actionbar">
       <div class="info">
         <span class="big">{{ pkg.trackingCode }}</span>
-        <span class="small">Attach this label to the package</span>
+        <span class="small">Attach it, then drive. Drop-off unlocks when you arrive.</span>
       </div>
       <button class="btn" @click="print">
         <Icon name="printer" :size="20" /> Print label
       </button>
-      <button class="btn btn-primary" @click="go('d-dropoff')">
-        Go to drop-off
+      <button class="btn btn-primary" @click="driverBackToJobs">
+        Done, back to my jobs
       </button>
     </footer>
   </div>

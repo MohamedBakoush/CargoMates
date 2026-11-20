@@ -1,4 +1,4 @@
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, ref } from 'vue'
 
 // ---------------------------------------------------------------------------
 // Mock data. Swap these for real API calls later.
@@ -675,7 +675,7 @@ export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
   const locObj = PICKUP_LOCATIONS.find(l => l.id === pkg.estPickupLocation)
   pkg.estPickupLabel = timeObj ? timeObj.label : pkg.estPickupTime
   pkg.estLocationLabel = locObj ? locObj.label : pkg.estPickupLocation
-  state.driverNotice = { kind: 'sent', pkgId, text: `Bid sent: ${eur(amount)} to ${pkg.sender.replace(/\.?$/, '.')} Their answer will show under Your active jobs.` }
+  state.driverNotice = { kind: 'sent', icon: 'clock', pkgId, text: `Bid sent: ${eur(amount)} to ${pkg.sender.replace(/\.?$/, '.')} Their answer will show under Your active jobs.` }
   go('d-packages')
 
   // Mock: the sender answers a few seconds later. Replace with the real notification.
@@ -686,7 +686,7 @@ export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
     const days = { today: 0, tomorrow: 1, '2days': 2, week: 5 }[pkg.estPickupTime] || 0
     const d = new Date(); d.setDate(d.getDate() + days)
     pkg.pickup = d.toISOString().slice(0, 10)
-    state.driverNotice = { kind: 'accepted', pkgId, text: `${pkg.sender} accepted your bid for ${pkg.from} → ${pkg.to}. Pickup ${pkg.estPickupLabel.toLowerCase()}.` }
+    state.driverNotice = { kind: 'accepted', icon: 'check', pkgId, text: `${pkg.sender} accepted your bid for ${pkg.from} → ${pkg.to}. Pickup ${pkg.estPickupLabel.toLowerCase()}.` }
   }, 6000 + Math.random() * 3000)
 }
 
@@ -699,13 +699,49 @@ export function driverViewPackage(pkgId) {
   go('d-package')
 }
 
+// A ticking clock so in-transit progress moves on screen
+export const now = ref(Date.now())
+setInterval(() => { now.value = Date.now() }, 1000)
+
+// Percent of the drive done for a picked-up package (mocked as a short timed drive)
+export function transitPercent(pkg) {
+  if (pkg.status === 'at-destination' || pkg.status === 'delivered') return 100
+  if (pkg.status !== 'picked-up' || !pkg.transitStart) return null
+  return Math.min(99, Math.max(0, Math.round(((now.value - pkg.transitStart) / pkg.transitMs) * 100)))
+}
+export function kmLeft(pkg) {
+  const p = transitPercent(pkg)
+  return p === null ? null : Math.max(1, Math.round(pkg.km * (1 - p / 100)))
+}
+
 export function driverConfirmPickup() {
   const pkg = state.driverActive
   if (!pkg) return
   pkg.status = 'picked-up'
   pkg.pickup = new Date().toISOString().slice(0, 10)
   pkg.trackingCode = 'CM-' + Math.random().toString(36).slice(2, 8).toUpperCase()
+  // Mock drive: the driver "arrives" after a short while. Replace with live GPS.
+  pkg.transitStart = Date.now()
+  pkg.transitMs = 15000 + Math.random() * 5000
+  pkg.arriveTimer = setTimeout(() => driverArrive(pkg), pkg.transitMs)
   go('d-tracking')
+}
+
+// After the label: back to the job list while driving
+export function driverBackToJobs() {
+  const pkg = state.driverActive
+  if (pkg && pkg.status === 'picked-up') {
+    state.driverNotice = { kind: 'sent', icon: 'truck', pkgId: pkg.id, text: `On your way to ${pkg.to}. Drop-off unlocks when you arrive.` }
+  }
+  go('d-packages')
+}
+
+export function driverArrive(pkg) {
+  if (!pkg || pkg.status !== 'picked-up') return
+  clearTimeout(pkg.arriveTimer)
+  pkg.status = 'at-destination'
+  pkg.updated = true
+  state.driverNotice = { kind: 'accepted', icon: 'pin', pkgId: pkg.id, text: `You have reached ${pkg.to}. Confirm drop-off at ${pkg.dropAddr}.` }
 }
 
 export function driverGoTracking() {
@@ -716,6 +752,8 @@ export function driverConfirmDropoff() {
   const pkg = state.driverActive
   if (!pkg) return
   pkg.status = 'delivered'
+  pkg.updated = false
   pkg.deliveredDate = new Date().toISOString().slice(0, 10)
+  state.driverNotice = { kind: 'accepted', icon: 'check', pkgId: pkg.id, text: `Delivered to ${pkg.to}. You will find it under Completed.` }
   go('d-packages')
 }
