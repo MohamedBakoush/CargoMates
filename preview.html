@@ -1,4 +1,5 @@
 <title>CargoMates Booking</title>
+<link rel="icon" type="image/jpeg" href="public/logo.jpg">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
 <style>
@@ -21,6 +22,11 @@
       console.error(err)
       boot.textContent = 'Could not start the prototype: ' + (err && err.message ? err.message : err)
     }
+    // This page is served from the repository root, so files Vite serves from public/ live under public/ here
+    document.addEventListener('error', (e) => {
+      const img = e.target
+      if (img.tagName === 'IMG' && /\/logo\.jpg$/.test(img.src) && !img.src.includes('/public/')) img.src = 'public/logo.jpg'
+    }, true)
     try {
       const clean = (p) => String(p).replace(/^\.?\//, '')
       const css = await fetch('src/style.css').then((r) => r.text())

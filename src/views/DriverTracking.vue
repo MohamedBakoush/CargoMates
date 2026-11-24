@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { state, go, driverBackToJobs } from '../store.js'
+import { state, go, driverBackToJobs, fmtDay } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const pkg = computed(() => state.driverActive)
@@ -48,7 +48,7 @@ const print = () => window.print()
               </div>
               <div class="label-row">
                 <span class="label-key">PICKUP</span>
-                <span class="label-val">{{ pkg.pickup }}</span>
+                <span class="label-val">{{ fmtDay(pkg.pickup) }}</span>
               </div>
             </div>
 

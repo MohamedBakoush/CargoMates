@@ -78,6 +78,15 @@ function back() {
         </div>
       </section>
 
+      <button v-if="!asDriver" class="card link-card" @click="go('calendar')">
+        <span class="link-icon"><Icon name="calendar" :size="22" /></span>
+        <span class="row-main">
+          <span class="row-route">Calendar</span>
+          <span class="muted row-sub">Pickups, deliveries and payments by date</span>
+        </span>
+        <Icon name="next" :size="18" class="muted" />
+      </button>
+
       <section class="list">
         <h2 class="section-title">{{ asDriver ? 'Completed orders' : 'Your orders' }}</h2>
         <p v-if="!rows.length" class="muted">{{ asDriver ? 'No completed jobs yet.' : 'No orders yet.' }}</p>
@@ -114,6 +123,8 @@ function back() {
 .stat-n { font-size: 19px; font-weight: 700; white-space: nowrap; }
 .stat-label { font-size: 13px; }
 
+.link-card { width: 100%; border: 0; text-align: left; display: flex; align-items: center; gap: 12px; min-height: 68px; }
+.link-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--soft); color: var(--navy); display: flex; align-items: center; justify-content: center; flex: none; }
 .list { display: flex; flex-direction: column; gap: 10px; }
 .section-title { font-size: 20px; font-weight: 600; margin: 4px 0 0; }
 .row-card { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: var(--radius); background: var(--card); text-align: left; }

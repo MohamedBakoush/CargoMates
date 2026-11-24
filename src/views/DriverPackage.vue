@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive, driverAccept } from '../store.js'
+import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive, driverAccept, fmtDay } from '../store.js'
 import Icon from '../components/Icon.vue'
 import RouteMap from '../components/RouteMap.vue'
 
@@ -154,7 +154,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destinat
       <div v-else-if="pkg.status === 'delivered'" class="status-panel card">
         <div class="check-circle done-circle"><Icon name="check" :size="28" /></div>
         <h2>Delivered</h2>
-        <p class="muted">Completed on {{ pkg.deliveredDate }}</p>
+        <p class="muted">Completed on {{ fmtDay(pkg.deliveredDate) }}</p>
       </div>
     </div>
 

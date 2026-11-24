@@ -6,7 +6,6 @@ import Icon from './Icon.vue'
 
 defineProps({
   back: { type: String, default: '' },
-  calendar: { type: Boolean, default: false },
 })
 
 const showSteps = ref(false)
@@ -27,7 +26,6 @@ const stepNow = computed(() => {
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
       <button class="btn btn-pill collapse" aria-label="Driver" @click="switchMode('driver')"><Icon name="truck" :size="20" /><span class="lbl">Driver</span></button>
-      <button v-if="calendar" class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
       <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 

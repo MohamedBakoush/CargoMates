@@ -31,7 +31,7 @@ function skipAhead() {
 </script>
 
 <template>
-  <PageLayout back="booked" calendar>
+  <PageLayout back="booked">
     <template v-if="s.booking">
       <h1 class="h1">{{ isClose ? 'Almost there.' : 'On the way.' }}{{ isAbroad && !isClose ? ' Border cleared.' : '' }}</h1>
       <p class="sub">

@@ -377,6 +377,7 @@ export const steps = computed(() => {
 // ---------------------------------------------------------------------------
 
 export function addPhotos(files) {
+  if (!state.shipment.photos.length) beginShipment()
   for (const f of files) {
     const estL = 30 + Math.floor(Math.random() * 50)
     const estW = 20 + Math.floor(Math.random() * 30)
@@ -540,10 +541,10 @@ export function setStatus(status) {
   }
 }
 
-export function pay() {
+// The current shipment as an entry in the order history
+function orderFromShipment(status) {
   const s = state.shipment
-  s.status = 'paid'
-  state.history.push({
+  return {
     id: 'h' + Date.now(),
     title: s.to ? s.to.name : '',
     from: s.from,
@@ -559,13 +560,28 @@ export function pay() {
     price: s.booking.price,
     note: s.booking.note || '',
     payMethod: s.payMethod,
-    paidDate: new Date().toISOString().slice(0, 10),
-    status: 'paid',
+    paidDate: status === 'paid' ? new Date().toISOString().slice(0, 10) : null,
+    status,
     abroad: isAbroad.value,
     code: s.booking.code,
-  })
+  }
+}
+
+export function pay() {
+  state.shipment.status = 'paid'
+  state.history.push(orderFromShipment('paid'))
   state.justPaid = true
   go('history')
+}
+
+// Starting from the empty start page always begins a clean shipment.
+// One that is still under way moves into the order history first, so it is not overwritten.
+export function beginShipment() {
+  const s = state.shipment
+  if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
+  if (s.booking && ['booked', 'onway', 'arrived'].includes(s.status)) state.history.push(orderFromShipment(s.status))
+  Object.assign(s, freshShipment())
+  state.justPaid = false
 }
 
 // Every order the sender has: past ones plus the shipment in progress (not in history until paid)
@@ -592,9 +608,7 @@ export function payOrder(id) {
 }
 
 export function startNew() {
-  if (bidTimer) { clearTimeout(bidTimer); bidTimer = null }
-  Object.assign(state.shipment, freshShipment())
-  state.justPaid = false
+  beginShipment()
   go('photos')
 }
 

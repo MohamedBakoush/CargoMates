@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, addPhotos, removePhoto, packageLabel, senderHome } from '../store.js'
+import { state, go, addPhotos, removePhoto, packageLabel, senderHome, beginShipment } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Icon from '../components/Icon.vue'
 import Guarantees from '../components/Guarantees.vue'
@@ -23,7 +23,8 @@ function onDrop(e) {
 }
 
 function noPhoto() {
-  if (!s.count) s.count = 1
+  beginShipment()
+  s.count = 1
   go('details')
 }
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, packageLabel, startNew, switchMode, senderHome } from '../store.js'
+import { state, go, fmtDay, packageLabel, startNew, switchMode } from '../store.js'
 import Icon from '../components/Icon.vue'
 
 const s = state.shipment
@@ -68,7 +68,7 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
 <template>
   <div class="page">
     <header class="topbar wrap">
-      <button class="btn btn-round" aria-label="Back to your shipment" @click="go(senderHome())"><Icon name="back" /></button>
+      <button class="btn btn-round" aria-label="Back to your profile" @click="go('profile')"><Icon name="back" /></button>
       <div class="brand keep">Calendar</div>
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />

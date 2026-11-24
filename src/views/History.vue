@@ -51,7 +51,6 @@ function statusClass(s) {
       <button class="brand" aria-label="CargoMates home" @click="go('home')"><img class="logo" src="/logo.jpg" alt="CargoMates" width="44" height="44"></button>
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
-      <button class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
       <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 

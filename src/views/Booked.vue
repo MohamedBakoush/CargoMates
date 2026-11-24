@@ -29,7 +29,7 @@ async function share() {
 </script>
 
 <template>
-  <PageLayout calendar>
+  <PageLayout>
     <template v-if="s.booking">
       <div class="headline">
         <span class="ok"><Icon name="check" :size="26" :stroke="2.4" /></span>

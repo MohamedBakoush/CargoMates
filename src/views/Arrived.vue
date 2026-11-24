@@ -10,7 +10,7 @@ const METHODS = PAY_METHODS
 </script>
 
 <template>
-  <PageLayout back="onway" calendar>
+  <PageLayout back="onway">
     <template v-if="s.booking">
       <template v-if="s.status !== 'paid'">
         <h1 class="h1">It arrived. {{ s.booking.hub ? 'Pick it up any time.' : 'Delivered to the door.' }}</h1>
