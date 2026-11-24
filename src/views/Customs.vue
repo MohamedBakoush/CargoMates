@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue'
-import { state, go, KINDS, needsFaktura } from '../store.js'
+import { state, go, KINDS, needsInvoice } from '../store.js'
 import PageLayout from '../components/PageLayout.vue'
 import Picker from '../components/Picker.vue'
 import Icon from '../components/Icon.vue'
@@ -8,16 +8,16 @@ import Icon from '../components/Icon.vue'
 const s = state.shipment
 const file = ref(null)
 
-// Outside Europe a faktura is required
-watchEffect(() => { if (needsFaktura.value) s.customsMode = 'faktura' })
+// Outside the EU an invoice is required
+watchEffect(() => { if (needsInvoice.value) s.customsMode = 'invoice' })
 
 const ready = computed(() =>
-  s.customsMode === 'faktura' ? !!s.fakturaName : s.contents.trim() && String(s.value).trim()
+  s.customsMode === 'invoice' ? !!s.invoiceName : s.contents.trim() && String(s.value).trim()
 )
 
 function onFile(e) {
   const f = e.target.files && e.target.files[0]
-  if (f) s.fakturaName = f.name
+  if (f) s.invoiceName = f.name
 }
 </script>
 
@@ -27,8 +27,8 @@ function onFile(e) {
     <p class="sub">Customs needs to know. You only see this page when crossing a border.</p>
 
     <div class="seg" role="tablist">
-      <button :class="{ on: s.customsMode === 'describe' }" :disabled="needsFaktura" @click="s.customsMode = 'describe'">Describe it</button>
-      <button :class="{ on: s.customsMode === 'faktura' }" @click="s.customsMode = 'faktura'">Upload faktura</button>
+      <button :class="{ on: s.customsMode === 'describe' }" :disabled="needsInvoice" @click="s.customsMode = 'describe'">Describe it</button>
+      <button :class="{ on: s.customsMode === 'invoice' }" @click="s.customsMode = 'invoice'">Upload invoice</button>
     </div>
 
     <div v-if="s.customsMode === 'describe'" class="sentence">
@@ -42,20 +42,20 @@ function onFile(e) {
       <Picker v-model="s.kind" :options="KINDS" title="What kind of shipment?" />.
     </div>
 
-    <div v-else class="faktura">
-      <button class="option" :class="{ selected: s.fakturaName }" @click="file.click()">
+    <div v-else class="invoice-upload">
+      <button class="option" :class="{ selected: s.invoiceName }" @click="file.click()">
         <Icon name="upload" :size="28" />
         <span class="grow">
-          <span class="title">{{ s.fakturaName || 'Upload your faktura (invoice)' }}</span>
-          <span class="hint">{{ s.fakturaName ? 'Tap to replace' : 'PDF or a photo of it' }}</span>
+          <span class="title">{{ s.invoiceName || 'Upload your commercial invoice' }}</span>
+          <span class="hint">{{ s.invoiceName ? 'Tap to replace' : 'PDF or a photo of it' }}</span>
         </span>
       </button>
       <input ref="file" type="file" accept="application/pdf,image/*" hidden @change="onFile">
     </div>
 
     <div class="card">
-      <template v-if="needsFaktura">{{ s.to.country }} is outside Europe, so customs needs your faktura.</template>
-      <template v-else>Within Europe a short description is enough, we make the papers. Outside Europe, upload your faktura.</template>
+      <template v-if="needsInvoice">{{ s.to.country }} is outside the EU, so customs needs your invoice.</template>
+      <template v-else>Within the EU a short description is enough, we make the papers. Outside the EU, upload your invoice.</template>
     </div>
 
     <template #actions>
@@ -70,6 +70,6 @@ function onFile(e) {
 
 <style scoped>
 .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
-.faktura { display: flex; flex-direction: column; gap: 12px; }
+.invoice-upload { display: flex; flex-direction: column; gap: 12px; }
 .card { font-size: 16px; }
 </style>

@@ -48,11 +48,11 @@ function statusClass(s) {
   <div class="page">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go(senderHome())"><Icon name="back" /></button>
-      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')"><img class="logo" src="/logo.jpg" alt="CargoMates" width="44" height="44"></button>
       <button class="role-tag" aria-label="Sender home" @click="go('photos')">Sender</button>
       <div class="spacer" />
-      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
       <button class="btn btn-pill collapse" aria-label="Calendar" @click="go('calendar')"><Icon name="calendar" :size="20" /><span class="lbl">Calendar</span></button>
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 
     <div class="body">
@@ -71,7 +71,7 @@ function statusClass(s) {
           <div v-for="order in orders" :key="order.id" class="receipt" :class="{ open: expandedId === order.id }">
             <button class="receipt-header" @click="toggle(order.id)">
               <div class="receipt-main">
-                <span class="receipt-route">{{ order.from || 'Drammen' }} → {{ order.to || order.title }}</span>
+                <span class="receipt-route">{{ order.from || 'Madrid' }} → {{ order.to || order.title }}</span>
                 <span class="receipt-what">{{ order.what }} · {{ fmtDay(order.pickup) }}</span>
               </div>
               <div class="receipt-right">
@@ -93,7 +93,7 @@ function statusClass(s) {
                 <div class="receipt-grid">
                   <div class="receipt-cell">
                     <span class="label">From</span>
-                    <span class="val">{{ order.from || 'Drammen' }}</span>
+                    <span class="val">{{ order.from || 'Madrid' }}</span>
                   </div>
                   <div class="receipt-cell">
                     <span class="label">To</span>
@@ -153,7 +153,7 @@ function statusClass(s) {
                   <span class="muted">Paid {{ fmtDay(order.paidDate) }} via {{ payLabel(order.payMethod) }}</span>
                 </div>
                 <div v-else class="pending">
-                  <RouteMap :from="order.from || 'Drammen'" :to="order.to || order.title" :progress="pending(order).progress" />
+                  <RouteMap :from="order.from || 'Madrid'" :to="order.to || order.title" :progress="pending(order).progress" />
                   <div class="pending-text">{{ pending(order).text }}</div>
                   <template v-if="order.status === 'arrived'">
                     <button class="btn btn-primary" @click="payNow(order)">Pay {{ eur(order.price || 0) }}</button>

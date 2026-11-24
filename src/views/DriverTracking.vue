@@ -11,9 +11,10 @@ const print = () => window.print()
   <div class="page" v-if="pkg">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-package')"><Icon name="back" /></button>
-      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')"><img class="logo" src="/logo.jpg" alt="CargoMates" width="44" height="44"></button>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('d-profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 
     <div class="body col">

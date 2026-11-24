@@ -36,7 +36,7 @@ const LEGS = [
 <template>
   <div class="landing">
     <header class="l-top">
-      <span class="brand">CargoMates</span>
+      <img class="logo landing-logo" src="/logo.jpg" alt="CargoMates" width="52" height="52">
     </header>
 
     <main class="l-main">
@@ -119,6 +119,7 @@ const LEGS = [
 
 <style scoped>
 .landing { height: 100%; overflow-y: auto; background: var(--bg); }
+.landing-logo { width: 52px; height: 52px; }
 .l-top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: rgba(251, 248, 243, 0.92); backdrop-filter: blur(8px); }
 
 .l-main { max-width: 1040px; margin: 0 auto; padding: 8px 16px calc(32px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 40px; }

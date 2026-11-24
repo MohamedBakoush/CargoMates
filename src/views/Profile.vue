@@ -17,7 +17,7 @@ const rows = computed(() => {
     return [...allOrders.value]
       .sort((a, b) => (b.pickup || '').localeCompare(a.pickup || ''))
       .map((o) => ({
-        id: o.id, route: `${o.from || 'Drammen'} → ${o.to || o.title}`, sub: `${o.what} · ${fmtDay(o.pickup)}`,
+        id: o.id, route: `${o.from || 'Madrid'} → ${o.to || o.title}`, sub: `${o.what} · ${fmtDay(o.pickup)}`,
         price: o.price || 0, badge: STATUS[o.status] || o.status, done: o.status === 'paid', open: () => openOrder(o.id),
       }))
   }

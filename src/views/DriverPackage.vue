@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive } from '../store.js'
+import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive, driverAccept } from '../store.js'
 import Icon from '../components/Icon.vue'
 import RouteMap from '../components/RouteMap.vue'
 
@@ -24,9 +24,10 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destinat
   <div class="page" v-if="pkg">
     <header class="topbar">
       <button class="btn btn-round" aria-label="Back" @click="go('d-packages')"><Icon name="back" /></button>
-      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')"><img class="logo" src="/logo.jpg" alt="CargoMates" width="44" height="44"></button>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
+      <button class="btn btn-pill collapse" aria-label="Profile" @click="go('d-profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
     </header>
 
     <div class="body col">
@@ -118,6 +119,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destinat
           <span class="est-chip"><Icon name="calendar" :size="14" /> {{ pkg.estPickupLabel }}</span>
           <span class="est-chip"><Icon name="pin" :size="14" /> {{ pkg.estLocationLabel }}</span>
         </div>
+        <button class="btn-ghost" @click="driverAccept(pkg)">Prototype: accept now</button>
       </div>
 
       <!-- Accepted → pickup -->

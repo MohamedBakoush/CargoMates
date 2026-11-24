@@ -135,6 +135,7 @@ const draft = computed(() => s.status === 'draft' && (s.count || s.to))
 .draft { border: 0; text-align: left; display: flex; flex-direction: column; gap: 4px; min-height: 72px; }
 .d-title { font-size: 16px; font-weight: 600; }
 .month-grid { flex: 999 1 640px; min-width: 0; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.month-grid > * { flex-shrink: 0; }
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
 .head { font-size: 15px; font-weight: 600; color: var(--muted); text-align: center; }
 .cell { min-height: 130px; background: #F6F1E8; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }

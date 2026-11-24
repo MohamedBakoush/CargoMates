@@ -100,6 +100,7 @@ function back() {
 .who-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .thread { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 720px; margin: 0 auto; }
+.thread > * { flex-shrink: 0; }
 .empty { text-align: center; margin: 32px 12px; font-size: 15px; }
 .row { display: flex; }
 .mine { justify-content: flex-end; }

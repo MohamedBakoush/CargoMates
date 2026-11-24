@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES, transitPercent, kmLeft } from '../store.js'
+import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES, transitPercent, kmLeft, driverAccept } from '../store.js'
 import Icon from '../components/Icon.vue'
 import Picker from '../components/Picker.vue'
 import RouteMap from '../components/RouteMap.vue'
@@ -56,11 +56,11 @@ function statusClass(s) {
 <template>
   <div class="page">
     <header class="topbar">
-      <button class="brand" aria-label="CargoMates home" @click="go('home')">CargoMates</button>
+      <button class="brand" aria-label="CargoMates home" @click="go('home')"><img class="logo" src="/logo.jpg" alt="CargoMates" width="44" height="44"></button>
       <button class="role-tag" aria-label="Driver home" @click="go('d-packages')">Driver</button>
       <div class="spacer" />
+      <button class="btn btn-pill collapse" aria-label="Sender" @click="switchMode('sender')"><Icon name="package" :size="20" /><span class="lbl">Sender</span></button>
       <button class="btn btn-pill collapse" aria-label="Profile" @click="go('d-profile')"><Icon name="user" :size="20" /><span class="lbl">Profile</span></button>
-      <button class="btn btn-pill" @click="switchMode('sender')"><Icon name="back" :size="18" />Sender</button>
     </header>
 
     <div class="body col">
@@ -72,7 +72,8 @@ function statusClass(s) {
 
       <section v-if="active.length" class="pkg-section">
         <h2 class="section-title">Your active jobs <span class="count">{{ active.length }}</span></h2>
-        <button v-for="pkg in active" :key="pkg.id" class="pkg-card job" :class="{ updated: pkg.updated }" @click="driverViewPackage(pkg.id)">
+        <template v-for="pkg in active" :key="pkg.id">
+        <button class="pkg-card job" :class="{ updated: pkg.updated }" @click="driverViewPackage(pkg.id)">
           <div class="pkg-icon" :class="pkg.status === 'bid-sent' ? 'wait-icon' : 'active-icon'">
             <Icon :name="{ 'bid-sent': 'clock', 'at-destination': 'pin' }[pkg.status] || 'truck'" :size="24" />
           </div>
@@ -87,6 +88,8 @@ function statusClass(s) {
           </div>
           <Icon name="next" :size="18" class="muted" />
         </button>
+        <button v-if="pkg.status === 'bid-sent'" class="btn-ghost skip" @click="driverAccept(pkg)">Prototype: accept now</button>
+        </template>
       </section>
 
       <section class="card route-card">
@@ -204,6 +207,7 @@ function statusClass(s) {
 @keyframes notice-in { from { transform: translateY(-8px); } to { transform: none; } }
 
 .wait-icon { background: #FFF3E0; color: #E65100; }
+.skip { align-self: flex-end; min-height: 40px; margin-top: -6px; font-size: 14px; text-decoration: underline; }
 .job-next { font-size: 14px; font-weight: 600; color: var(--ink); }
 .job.updated { border: 2.5px solid #2B8A3E; padding: 13px 15px; }
 .status-badge { display: inline-flex; align-items: center; gap: 6px; }

@@ -1,6 +1,6 @@
 # CargoMates
 
-A clickable prototype of a shipping marketplace for small businesses. Senders photograph what they want to ship, drivers already heading that way bid on it, and CargoMates stands behind the delivery with a guaranteed date. Built phone-first in Vue 3; everything behind the screens is mock data.
+A clickable prototype of a shipping marketplace for small businesses, built around a sender in Madrid. Senders photograph what they want to ship, drivers already heading that way bid on it, and CargoMates stands behind the delivery with a guaranteed date. Built phone-first in Vue 3; everything behind the screens is mock data.
 
 <img src="docs/screenshots/00-landing.jpg" width="260" alt="Landing page: Picked up at your door. Delivered on a date we guarantee, with Send something and I'm a driver buttons and a map of a driver's route">
 
@@ -10,10 +10,10 @@ The **landing page** at `/` explains the service and sends people in as a sender
 
 | Start with a photo | Pickup at your door | Drivers bid | Track it |
 | :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/01-home.jpg" width="200" alt="Start page with a Take a photo tile and the CargoMates Promise"> | <img src="docs/screenshots/02-pickup-delivery.jpg" width="200" alt="Pickup slot and delivery options with prices"> | <img src="docs/screenshots/03-offers.jpg" width="200" alt="Two driver offers with ratings, pickup dates and guaranteed delivery dates"> | <img src="docs/screenshots/04-tracking.jpg" width="200" alt="Route map from Drammen to Bergen with the truck halfway"> |
+| <img src="docs/screenshots/01-home.jpg" width="200" alt="Start page with a Take a photo tile and the CargoMates Promise"> | <img src="docs/screenshots/02-pickup-delivery.jpg" width="200" alt="Pickup slot and delivery options with prices"> | <img src="docs/screenshots/03-offers.jpg" width="200" alt="Two driver offers with ratings, pickup dates and guaranteed delivery dates"> | <img src="docs/screenshots/04-tracking.jpg" width="200" alt="Route map from Madrid to Barcelona with the truck halfway"> |
 
 1. **Photo** of each package. Size and weight are estimated per box and can be corrected.
-2. **Where and when**, written as one sentence you fill in. Customs only appears when the shipment crosses a border.
+2. **Where and when**, written as one sentence you fill in. Customs only appears when the shipment crosses a border: a short description inside the EU, an invoice upload outside it (London, Zurich).
 3. **Pickup and delivery.** Pickup is always at the sender's door in a morning or afternoon slot. Delivery is to the door, to a hub, or hub plus a local van.
 4. **Offers.** Each driver's bid shows their rating, a pickup date and a guaranteed delivery date.
 5. **Track and pay.** A route map shows the truck. Nothing is paid until it arrives.
@@ -68,7 +68,7 @@ src/
 ## What is fake (swap later)
 
 - **Pricing**: `priceFor()` in `store.js` is a made-up formula.
-- **Cities and distances**: `CITIES` and `EXTRA_PLACES` in `store.js`. Replace with an address API.
+- **Cities and distances**: `CITIES` (road km from Madrid) and `EXTRA_PLACES` in `store.js`. Replace with an address API.
 - **Photo analysis**: `addPhotos()` invents plausible dimensions and weight for each photo.
 - **Offers and dates**: `startBidding()` generates two to four bids with dates worked out from distance.
 - **Driver's packages**: `MOCK_PACKAGES`. The sender's shipment and the driver's package list are not connected to each other.

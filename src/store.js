@@ -4,38 +4,38 @@ import { reactive, computed, watch, ref } from 'vue'
 // Mock data. Swap these for real API calls later.
 // ---------------------------------------------------------------------------
 
-export const ORIGIN = { name: 'Drammen', country: 'Norway', lat: 59.74, lon: 10.2 }
+export const ORIGIN = { name: 'Madrid', country: 'Spain', lat: 40.42, lon: -3.7 }
 
-// km from Drammen, rough road distance
+// km from Madrid, rough road distance
 export const CITIES = [
-  { name: 'Oslo', country: 'Norway', km: 40, lat: 59.91, lon: 10.75 },
-  { name: 'Kongsberg', country: 'Norway', km: 40, lat: 59.67, lon: 9.65 },
-  { name: 'Kristiansand', country: 'Norway', km: 290, lat: 58.15, lon: 8.0 },
-  { name: 'Bergen', country: 'Norway', km: 460, lat: 60.39, lon: 5.32 },
-  { name: 'Stavanger', country: 'Norway', km: 520, lat: 58.97, lon: 5.73 },
-  { name: 'Trondheim', country: 'Norway', km: 530, lat: 63.43, lon: 10.4 },
-  { name: 'Gothenburg', country: 'Sweden', km: 300, lat: 57.71, lon: 11.97 },
-  { name: 'Stockholm', country: 'Sweden', km: 560, lat: 59.33, lon: 18.07 },
-  { name: 'Copenhagen', country: 'Denmark', km: 600, lat: 55.68, lon: 12.57 },
-  { name: 'Hamburg', country: 'Germany', km: 900, lat: 53.55, lon: 9.99 },
-  { name: 'Berlin', country: 'Germany', km: 1050, lat: 52.52, lon: 13.4 },
-  { name: 'Amsterdam', country: 'Netherlands', km: 1230, lat: 52.37, lon: 4.9 },
-  { name: 'Rotterdam', country: 'Netherlands', km: 1250, lat: 51.92, lon: 4.48 },
-  { name: 'Rotterdam Port, Maasvlakte', country: 'Netherlands', km: 1290, lat: 51.95, lon: 4.03 },
-  { name: 'Antwerp', country: 'Belgium', km: 1330, lat: 51.22, lon: 4.4 },
-  { name: 'London', country: 'United Kingdom', km: 1500, lat: 51.51, lon: -0.13 },
+  { name: 'Toledo', country: 'Spain', km: 72, lat: 39.86, lon: -4.02 },
+  { name: 'Zaragoza', country: 'Spain', km: 315, lat: 41.65, lon: -0.88 },
+  { name: 'Valencia', country: 'Spain', km: 355, lat: 39.47, lon: -0.38 },
+  { name: 'Bilbao', country: 'Spain', km: 395, lat: 43.26, lon: -2.93 },
+  { name: 'Seville', country: 'Spain', km: 530, lat: 37.39, lon: -5.98 },
+  { name: 'Málaga', country: 'Spain', km: 530, lat: 36.72, lon: -4.42 },
+  { name: 'Barcelona', country: 'Spain', km: 620, lat: 41.39, lon: 2.17 },
+  { name: 'Porto', country: 'Portugal', km: 560, lat: 41.15, lon: -8.61 },
+  { name: 'Lisbon', country: 'Portugal', km: 625, lat: 38.72, lon: -9.14 },
+  { name: 'Bordeaux', country: 'France', km: 690, lat: 44.84, lon: -0.58 },
+  { name: 'Lyon', country: 'France', km: 1050, lat: 45.76, lon: 4.84 },
+  { name: 'Paris', country: 'France', km: 1270, lat: 48.86, lon: 2.35 },
+  { name: 'Zurich', country: 'Switzerland', km: 1450, lat: 47.38, lon: 8.54 },
+  { name: 'Milan', country: 'Italy', km: 1580, lat: 45.46, lon: 9.19 },
+  { name: 'Brussels', country: 'Belgium', km: 1580, lat: 50.85, lon: 4.35 },
+  { name: 'London', country: 'United Kingdom', km: 1730, lat: 51.51, lon: -0.13 },
+  { name: 'Amsterdam', country: 'Netherlands', km: 1770, lat: 52.37, lon: 4.9 },
+  { name: 'Rotterdam Port, Maasvlakte', country: 'Netherlands', km: 1780, lat: 51.95, lon: 4.03 },
+  { name: 'Hamburg', country: 'Germany', km: 2200, lat: 53.55, lon: 9.99 },
+  { name: 'Berlin', country: 'Germany', km: 2320, lat: 52.52, lon: 13.4 },
+  { name: 'Copenhagen', country: 'Denmark', km: 2500, lat: 55.68, lon: 12.57 },
 ]
 
 // Places a driver can route through that are not sender destinations yet
 const EXTRA_PLACES = [
   { name: 'Malmö', country: 'Sweden', lat: 55.6, lon: 13.0 },
-  { name: 'Brussels', country: 'Belgium', lat: 50.85, lon: 4.35 },
   { name: 'Frankfurt', country: 'Germany', lat: 50.11, lon: 8.68 },
   { name: 'Munich', country: 'Germany', lat: 48.14, lon: 11.58 },
-  { name: 'Paris', country: 'France', lat: 48.86, lon: 2.35 },
-  { name: 'Lyon', country: 'France', lat: 45.76, lon: 4.84 },
-  { name: 'Barcelona', country: 'Spain', lat: 41.39, lon: 2.17 },
-  { name: 'Madrid', country: 'Spain', lat: 40.42, lon: -3.7 },
 ]
 const PLACES = [ORIGIN, ...CITIES, ...EXTRA_PLACES]
 
@@ -57,8 +57,8 @@ function roadKm(a, b) {
   return 2 * 6371 * Math.asin(Math.sqrt(h)) * 1.25
 }
 
-// Inside the EU / EEA a short description is enough, we make the papers.
-const EUROPE = ['Norway', 'Sweden', 'Denmark', 'Finland', 'Germany', 'Netherlands', 'Belgium', 'France', 'Poland', 'Spain', 'Italy']
+// Inside the EU a short description is enough, we make the papers. Outside it customs needs an invoice.
+const EU = ['Spain', 'Portugal', 'France', 'Italy', 'Germany', 'Netherlands', 'Belgium', 'Denmark', 'Sweden', 'Finland', 'Poland', 'Austria', 'Ireland']
 
 export const SIZES = [
   { id: 'small', label: 'small', plural: 'small boxes', hint: 'Fits in a shoebox', factor: 0.35 },
@@ -102,11 +102,11 @@ export const GUARANTEES = [
 ]
 
 const DRIVERS = [
-  { name: 'Lars H.', rating: 4.8, trips: 312, avatar: 'L' },
-  { name: 'Ingrid S.', rating: 4.9, trips: 547, avatar: 'I' },
+  { name: 'Javier M.', rating: 4.8, trips: 312, avatar: 'J' },
+  { name: 'Lucía S.', rating: 4.9, trips: 547, avatar: 'L' },
   { name: 'Mehmet K.', rating: 4.7, trips: 189, avatar: 'M' },
   { name: 'Pieter V.', rating: 4.6, trips: 421, avatar: 'P' },
-  { name: 'Anna B.', rating: 4.9, trips: 278, avatar: 'A' },
+  { name: 'Ana B.', rating: 4.9, trips: 278, avatar: 'A' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -119,43 +119,49 @@ const DRIVERS = [
 
 const MOCK_PACKAGES = [
   {
-    id: 'pkg-1', from: 'Oslo', to: 'Bergen', what: '2 medium boxes', size: 'medium', count: 2,
-    sender: 'Kari N.', senderRating: 4.9, price: 145, km: 460, pickup: null, status: 'available',
-    pickupAddr: 'Storgata 12, 0155 Oslo', dropAddr: 'Torgallmenningen 4, 5014 Bergen',
+    id: 'pkg-1', from: 'Madrid', to: 'Barcelona', what: '2 medium boxes', size: 'medium', count: 2,
+    sender: 'Lucía G.', senderRating: 4.9, price: 75, km: 620, pickup: null, status: 'available',
+    pickupAddr: 'Calle de Alcalá 120, 28009 Madrid', dropAddr: 'Carrer de Mallorca 250, 08008 Barcelona',
     weight: '10-50 kg', note: 'Fragile — contains ceramics',
   },
   {
-    id: 'pkg-2', from: 'Drammen', to: 'Kristiansand', what: '1 pallet', size: 'pallet', count: 1,
-    sender: 'Erik O.', senderRating: 4.7, price: 200, km: 290, pickup: null, status: 'available',
-    pickupAddr: 'Grønland 2, 3045 Drammen', dropAddr: 'Markens gate 20, 4611 Kristiansand',
+    id: 'pkg-2', from: 'Valencia', to: 'Madrid', what: '1 pallet', size: 'pallet', count: 1,
+    sender: 'Javier R.', senderRating: 4.7, price: 180, km: 355, pickup: null, status: 'available',
+    pickupAddr: 'Avinguda del Port 12, 46023 Valencia', dropAddr: 'Calle de Embajadores 180, 28045 Madrid',
     weight: '50-100 kg', note: '',
   },
   {
-    id: 'pkg-3', from: 'Stavanger', to: 'Trondheim', what: '3 large items', size: 'large', count: 3,
-    sender: 'Maja L.', senderRating: 5.0, price: 295, km: 830, pickup: null, status: 'available',
-    pickupAddr: 'Klubbgata 8, 4013 Stavanger', dropAddr: 'Nordre gate 15, 7011 Trondheim',
+    id: 'pkg-3', from: 'Seville', to: 'Bilbao', what: '3 large items', size: 'large', count: 3,
+    sender: 'Carmen L.', senderRating: 5.0, price: 260, km: 860, pickup: null, status: 'available',
+    pickupAddr: 'Calle Sierpes 45, 41004 Seville', dropAddr: 'Gran Vía 30, 48009 Bilbao',
     weight: '100+ kg', note: 'Furniture — needs blankets',
   },
   {
-    id: 'pkg-4', from: 'Kongsberg', to: 'Oslo', what: '1 small box', size: 'small', count: 1,
-    sender: 'Thomas R.', senderRating: 4.6, price: 40, km: 80, pickup: null, status: 'available',
-    pickupAddr: 'Kirkegata 3, 3611 Kongsberg', dropAddr: 'Karl Johans gate 22, 0159 Oslo',
+    id: 'pkg-4', from: 'Toledo', to: 'Madrid', what: '1 small box', size: 'small', count: 1,
+    sender: 'Diego S.', senderRating: 4.6, price: 15, km: 72, pickup: null, status: 'available',
+    pickupAddr: 'Calle del Comercio 10, 45001 Toledo', dropAddr: 'Calle de Serrano 50, 28001 Madrid',
     weight: 'Under 10 kg', note: 'Electronics — handle with care',
   },
   {
-    id: 'pkg-5', from: 'Amsterdam', to: 'Copenhagen', what: '2 pallets', size: 'pallet', count: 2,
+    id: 'pkg-5', from: 'Bordeaux', to: 'Paris', what: '2 pallets', size: 'pallet', count: 2,
+    sender: 'Camille D.', senderRating: 4.8, price: 380, km: 585, pickup: null, status: 'available',
+    pickupAddr: 'Cours de l’Intendance 20, 33000 Bordeaux', dropAddr: 'Rue de Rivoli 80, 75004 Paris',
+    weight: '100+ kg', note: 'Wine — keep upright',
+  },
+  {
+    id: 'pkg-6', from: 'Amsterdam', to: 'Copenhagen', what: '2 pallets', size: 'pallet', count: 2,
     sender: 'Sanne D.', senderRating: 4.8, price: 600, km: 780, pickup: null, status: 'available',
     pickupAddr: 'Herengracht 120, 1015 Amsterdam', dropAddr: 'Vesterbrogade 40, 1620 Copenhagen',
     weight: '100+ kg', note: '',
   },
   {
-    id: 'pkg-6', from: 'Paris', to: 'Berlin', what: '6 medium boxes', size: 'medium', count: 6,
+    id: 'pkg-7', from: 'Paris', to: 'Berlin', what: '6 medium boxes', size: 'medium', count: 6,
     sender: 'Luc M.', senderRating: 4.9, price: 470, km: 1050, pickup: null, status: 'available',
     pickupAddr: 'Rue de Rivoli 80, 75004 Paris', dropAddr: 'Torstraße 60, 10119 Berlin',
     weight: '50-100 kg', note: 'Trade-fair materials',
   },
   {
-    id: 'pkg-7', from: 'Hamburg', to: 'Malmö', what: '1 large item', size: 'large', count: 1,
+    id: 'pkg-8', from: 'Hamburg', to: 'Malmö', what: '1 large item', size: 'large', count: 1,
     sender: 'Jonas W.', senderRating: 4.7, price: 270, km: 480, pickup: null, status: 'available',
     pickupAddr: 'Mönckebergstraße 7, 20095 Hamburg', dropAddr: 'Stortorget 2, 211 22 Malmö',
     weight: '10-50 kg', note: '',
@@ -164,8 +170,8 @@ const MOCK_PACKAGES = [
 
 // The two people using this prototype. Ratings come from the other side after each job.
 export const PROFILES = {
-  sender: { name: 'Alex Berg', rating: 4.9, ratings: 14, since: '2024' },
-  driver: { name: 'Jonas Lie', rating: 4.8, ratings: 212, since: '2022' },
+  sender: { name: 'Alex Moreno', rating: 4.9, ratings: 14, since: '2024' },
+  driver: { name: 'Marco Ruiz', rating: 4.8, ratings: 212, since: '2022' },
 }
 
 // Jobs the driver finished before this session, with the rating each sender gave
@@ -173,13 +179,13 @@ function seedDriverPast() {
   const d = new Date()
   const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
   return [
-    { id: 'past-1', from: 'Oslo', to: 'Gothenburg', what: '2 pallets', price: 340, date: iso(-4), sender: 'Hanne S.', rated: 5 },
-    { id: 'past-2', from: 'Bergen', to: 'Stavanger', what: '4 medium boxes', price: 125, date: iso(-11), sender: 'Ola T.', rated: 5 },
+    { id: 'past-1', from: 'Madrid', to: 'Valencia', what: '2 pallets', price: 210, date: iso(-4), sender: 'Pablo T.', rated: 5 },
+    { id: 'past-2', from: 'Barcelona', to: 'Lyon', what: '4 medium boxes', price: 160, date: iso(-11), sender: 'Marta P.', rated: 5 },
     { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 235, date: iso(-19), sender: 'Mette K.', rated: 4 },
   ]
 }
 
-const STORAGE_KEY = 'cargomates-v2' // v2: prices in euros, Bizum instead of Vipps
+const STORAGE_KEY = 'cargomates-v3' // v3: sender based in Madrid
 
 function freshShipment() {
   return {
@@ -190,11 +196,11 @@ function freshShipment() {
     to: null, // city object
     toQuery: '',
     arrival: 'week',
-    customsMode: 'describe', // 'describe' | 'faktura'
+    customsMode: 'describe', // 'describe' | 'invoice'
     contents: '',
     value: '',
     kind: 'sale',
-    fakturaName: '',
+    invoiceName: '',
     pickupSlot: 'am',
     delivery: 'door',
     status: 'draft', // draft | bidding | booked | onway | arrived | paid
@@ -247,8 +253,8 @@ function seedHistory() {
   const d = new Date()
   const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
   return [
-    { id: 'h1', title: 'Oslo', from: 'Drammen', to: 'Oslo', toCountry: 'Norway', what: '1 pallet', size: 'pallet', count: 1, pickup: iso(-9), arrive: iso(-8), driver: 'Ingrid S.', hub: 'CargoMates hub Oslo', price: 110, note: '', payMethod: 'bizum', paidDate: iso(-7), status: 'paid', abroad: false, code: '4821' },
-    { id: 'h2', title: 'Gothenburg', from: 'Drammen', to: 'Gothenburg', toCountry: 'Sweden', what: '3 large items', size: 'large', count: 3, pickup: iso(3), arrive: iso(4), driver: 'Pieter V.', hub: null, price: 245, note: 'Leave at the loading dock', payMethod: 'card', paidDate: null, status: 'booked', abroad: true, code: '7193' },
+    { id: 'h1', title: 'Valencia', from: 'Madrid', to: 'Valencia', toCountry: 'Spain', what: '1 pallet', size: 'pallet', count: 1, pickup: iso(-9), arrive: iso(-8), driver: 'Lucía S.', hub: 'CargoMates hub Valencia', price: 95, note: '', payMethod: 'bizum', paidDate: iso(-7), status: 'paid', abroad: false, code: '4821' },
+    { id: 'h2', title: 'Lisbon', from: 'Madrid', to: 'Lisbon', toCountry: 'Portugal', what: '3 large items', size: 'large', count: 3, pickup: iso(3), arrive: iso(4), driver: 'Pieter V.', hub: null, price: 230, note: 'Leave at the loading dock', payMethod: 'card', paidDate: null, status: 'booked', abroad: true, code: '7193' },
   ]
 }
 
@@ -284,7 +290,7 @@ export function go(route) {
 // ---------------------------------------------------------------------------
 
 export const isAbroad = computed(() => !!state.shipment.to && state.shipment.to.country !== ORIGIN.country)
-export const needsFaktura = computed(() => isAbroad.value && !EUROPE.includes(state.shipment.to.country))
+export const needsInvoice = computed(() => isAbroad.value && !EU.includes(state.shipment.to.country))
 
 export const sizeObj = computed(() => SIZES.find((s) => s.id === state.shipment.size))
 export const arrivalObj = computed(() => ARRIVALS.find((a) => a.id === state.shipment.arrival))
@@ -679,15 +685,20 @@ export function driverBid(pkgId, amount, pickupTime, pickupLocation) {
   go('d-packages')
 
   // Mock: the sender answers a few seconds later. Replace with the real notification.
-  setTimeout(() => {
-    if (pkg.status !== 'bid-sent') return
-    pkg.status = 'accepted'
-    pkg.updated = true
-    const days = { today: 0, tomorrow: 1, '2days': 2, week: 5 }[pkg.estPickupTime] || 0
-    const d = new Date(); d.setDate(d.getDate() + days)
-    pkg.pickup = d.toISOString().slice(0, 10)
-    state.driverNotice = { kind: 'accepted', icon: 'check', pkgId, text: `${pkg.sender} accepted your bid for ${pkg.from} → ${pkg.to}. Pickup ${pkg.estPickupLabel.toLowerCase()}.` }
-  }, 6000 + Math.random() * 3000)
+  pkg.acceptTimer = setTimeout(() => driverAccept(pkg), 6000 + Math.random() * 3000)
+}
+
+// The sender accepts a waiting bid (also the prototype's "accept now" skip)
+export function driverAccept(pkg) {
+  if (!pkg || pkg.status !== 'bid-sent') return
+  clearTimeout(pkg.acceptTimer)
+  pkg.status = 'accepted'
+  // highlight it on the dashboard unless the driver is looking at it right now
+  pkg.updated = !(state.route === 'd-package' && state.driverActive === pkg)
+  const days = { today: 0, tomorrow: 1, '2days': 2, week: 5 }[pkg.estPickupTime] || 0
+  const d = new Date(); d.setDate(d.getDate() + days)
+  pkg.pickup = d.toISOString().slice(0, 10)
+  state.driverNotice = { kind: 'accepted', icon: 'check', pkgId: pkg.id, text: `${pkg.sender} accepted your bid for ${pkg.from} → ${pkg.to}. Pickup ${pkg.estPickupLabel.toLowerCase()}.` }
 }
 
 export function driverViewPackage(pkgId) {
