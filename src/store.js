@@ -180,8 +180,8 @@ function seedDriverPast() {
   const iso = (offset) => { const x = new Date(d); x.setDate(x.getDate() + offset); return x.toISOString().slice(0, 10) }
   return [
     { id: 'past-1', from: 'Madrid', to: 'Valencia', what: '2 pallets', price: 210, date: iso(-4), sender: 'Pablo T.', rated: 5 },
-    { id: 'past-2', from: 'Barcelona', to: 'Lyon', what: '4 medium boxes', price: 160, date: iso(-11), sender: 'Marta P.', rated: 5 },
-    { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 235, date: iso(-19), sender: 'Mette K.', rated: 4 },
+    { id: 'past-2', from: 'Barcelona', to: 'Lyon', what: '4 medium boxes', price: 160, date: iso(-11), sender: 'Marta P.', rated: 5, ratedSender: 5 },
+    { id: 'past-3', from: 'Hamburg', to: 'Copenhagen', what: '1 large item', price: 235, date: iso(-19), sender: 'Mette K.', rated: 4, ratedSender: 4 },
   ]
 }
 
