@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, fmtDay, eur, startNew, senderHome, allOrders, payOrder, payLabel } from '../store.js'
+import { state, go, fmtDay, eur, startNew, senderHome, allOrders, payOrder, payLabel, rateDriver } from '../store.js'
 import RouteMap from '../components/RouteMap.vue'
 import Icon from '../components/Icon.vue'
+import StarRating from '../components/StarRating.vue'
 
 const expandedId = ref(state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null)
 
@@ -27,6 +28,8 @@ function payNow(o) {
   if (o.current) go('arrived')
   else payOrder(o.id)
 }
+
+const lastDriver = computed(() => (state.history.length ? state.history[state.history.length - 1].driver : 'your driver'))
 
 function statusLabel(s) {
   if (s === 'paid') return 'Paid'
@@ -58,7 +61,7 @@ function statusClass(s) {
         <div class="main-inner">
           <div v-if="state.justPaid" class="paid-banner">
             <span class="paid-ok"><Icon name="check" :size="22" :stroke="2.4" /></span>
-            <span><b>Paid. Thanks!</b><br>Your receipt is open below.</span>
+            <span><b>Paid. Thanks!</b><br>How was {{ lastDriver }}? Rate them on the receipt below.</span>
           </div>
           <h1 class="h1">Orders</h1>
 
@@ -71,6 +74,7 @@ function statusClass(s) {
               <div class="receipt-main">
                 <span class="receipt-route">{{ order.from || 'Madrid' }} → {{ order.to || order.title }}</span>
                 <span class="receipt-what">{{ order.what }} · {{ fmtDay(order.pickup) }}</span>
+                <span v-if="order.status === 'paid' && order.driver && !order.ratedDriver" class="rate-hint">★ Rate {{ order.driver }}</span>
               </div>
               <div class="receipt-right">
                 <span class="receipt-price">{{ eur(order.price || 0) }}</span>
@@ -150,6 +154,12 @@ function statusClass(s) {
                 <div v-if="order.paidDate" class="receipt-footer">
                   <span class="muted">Paid {{ fmtDay(order.paidDate) }} via {{ payLabel(order.payMethod) }}</span>
                 </div>
+                <div v-if="order.status === 'paid' && order.driver" class="rate" :class="{ done: order.ratedDriver }">
+                  <span class="rate-label">{{ order.ratedDriver ? `You rated ${order.driver}` : `How was ${order.driver}?` }}</span>
+                  <StarRating :model-value="order.ratedDriver || 0" :readonly="!!order.ratedDriver" :label="`Rate ${order.driver}`"
+                              @update:model-value="(n) => rateDriver(order, n)" />
+                  <span v-if="order.ratedDriver" class="muted rate-thanks">Thanks, your rating helps other senders.</span>
+                </div>
                 <div v-else class="pending">
                   <RouteMap :from="order.from || 'Madrid'" :to="order.to || order.title" :progress="pending(order).progress" />
                   <div class="pending-text">{{ pending(order).text }}</div>
@@ -182,6 +192,11 @@ function statusClass(s) {
 </template>
 
 <style scoped>
+.rate { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 12px; border-radius: 16px; background: #FFF6EC; }
+.rate.done { background: var(--soft); }
+.rate-label { font-size: 16px; font-weight: 600; }
+.rate-thanks { font-size: 13px; }
+.rate-hint { font-size: 13px; font-weight: 600; color: var(--accent); }
 .paid-banner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius); background: #E8F5E9; font-size: 16px; line-height: 1.35; }
 .paid-ok { width: 40px; height: 40px; border-radius: 50%; background: #2E7D32; color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
 

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, driverConfirmDropoff } from '../store.js'
+import { state, go, driverConfirmDropoff, driverFinishDelivery, rateSender } from '../store.js'
 import Icon from '../components/Icon.vue'
+import StarRating from '../components/StarRating.vue'
 
 const pkg = computed(() => state.driverActive)
 const photoPackage = ref(null)
 const photoScan = ref(false)
-const step = ref(1) // 1 = photo of package at destination, 2 = scan QR, 3 = confirm
+const step = ref(1) // 1 = photo of package at destination, 2 = scan QR, 3 = confirm, then rate the sender
 
 function takePhoto(e) {
   const file = e.target.files && e.target.files[0]
@@ -34,7 +35,17 @@ function confirm() {
     </header>
 
     <div class="body col">
-      <div class="task-card card">
+      <div v-if="pkg.status === 'delivered'" class="task-card card rate-card">
+        <span class="done-mark"><Icon name="check" :size="30" :stroke="2.4" /></span>
+        <h1 class="task-title">Delivered to {{ pkg.to }}</h1>
+        <p class="muted">{{ pkg.from }} → {{ pkg.to }} · {{ pkg.what }}</p>
+        <p class="rate-q">{{ pkg.ratedSender ? `You rated ${pkg.sender}` : `How was ${pkg.sender}?` }}</p>
+        <StarRating :model-value="pkg.ratedSender || 0" :readonly="!!pkg.ratedSender" :label="`Rate ${pkg.sender}`"
+                    @update:model-value="(n) => rateSender(pkg, n)" />
+        <p class="muted small">{{ pkg.ratedSender ? 'Thanks. Ratings help other drivers choose who to work with.' : 'Was the pickup easy and the package ready? Your rating helps other drivers.' }}</p>
+      </div>
+
+      <div v-else class="task-card card">
         <h1 class="task-title">Confirm drop-off</h1>
         <p class="muted">{{ pkg.to }} · {{ pkg.dropAddr }}</p>
 
@@ -81,13 +92,21 @@ function confirm() {
         </div>
       </div>
 
-      <div class="skip-row">
+      <div v-if="pkg.status !== 'delivered'" class="skip-row">
         <button v-if="step === 1" class="btn btn-ghost" @click="step = 2">Skip photo →</button>
         <button v-if="step === 2" class="btn btn-ghost" @click="step = 3">Skip scan →</button>
       </div>
     </div>
 
-    <footer class="actionbar" v-if="step === 3">
+    <footer class="actionbar" v-if="pkg.status === 'delivered'">
+      <div class="info">
+        <span class="big">Delivery complete</span>
+        <span class="small">{{ pkg.trackingCode }}</span>
+      </div>
+      <button class="btn btn-driver" @click="driverFinishDelivery">{{ pkg.ratedSender ? 'Back to my jobs' : 'Rate later' }}</button>
+    </footer>
+
+    <footer class="actionbar" v-else-if="step === 3">
       <div class="info">
         <span class="big">Deliver to {{ pkg.to }}</span>
         <span class="small">{{ pkg.trackingCode }}</span>
@@ -101,6 +120,11 @@ function confirm() {
 
 <style scoped>
 
+.rate-card { align-items: center; text-align: center; padding-block: 28px; }
+.done-mark { width: 60px; height: 60px; border-radius: 50%; background: #E6F5E6; color: #2B8A3E; display: flex; align-items: center; justify-content: center; }
+.rate-card p { margin: 0; }
+.rate-q { margin-top: 10px !important; font-size: 18px; font-weight: 600; }
+.small { font-size: 14px; max-width: 320px; }
 .scan-area { display: flex; }
 .small-ring { width: 32px; height: 32px; }
 .scanning { display: flex; align-items: center; gap: 12px; }

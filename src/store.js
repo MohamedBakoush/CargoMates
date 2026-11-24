@@ -562,7 +562,7 @@ function orderFromShipment(status) {
     paidDate: status === 'paid' ? new Date().toISOString().slice(0, 10) : null,
     status,
     abroad: isAbroad.value,
-    code: s.booking.code,
+    code: s.booking.hub ? s.booking.code : '', // a pickup code only matters when the receiver collects at a hub
   }
 }
 
@@ -597,6 +597,14 @@ export const allOrders = computed(() => {
   }
   return list
 })
+
+// Ratings given by this sender and this driver (the other side's rating of you is mock data)
+export function rateDriver(order, stars) {
+  if (!order.ratedDriver) order.ratedDriver = stars
+}
+export function rateSender(pkg, stars) {
+  if (!pkg.ratedSender) pkg.ratedSender = stars
+}
 
 // Pay a past order straight from its receipt
 export function payOrder(id) {
@@ -778,6 +786,15 @@ export function driverConfirmDropoff() {
   pkg.status = 'delivered'
   pkg.updated = false
   pkg.deliveredDate = new Date().toISOString().slice(0, 10)
-  state.driverNotice = { kind: 'accepted', icon: 'check', pkgId: pkg.id, text: `Delivered to ${pkg.to}. You will find it under Completed.` }
+}
+
+// After the rating step on the drop-off screen: back to the job list
+export function driverFinishDelivery() {
+  const pkg = state.driverActive
+  if (pkg) {
+    state.driverNotice = pkg.ratedSender
+      ? { kind: 'accepted', icon: 'check', pkgId: pkg.id, text: `Delivered to ${pkg.to}. Thanks for rating ${pkg.sender.replace(/\.?$/, '.')}` }
+      : { kind: 'accepted', icon: 'check', pkgId: pkg.id, text: `Delivered to ${pkg.to}. You can still rate ${pkg.sender} under Completed.` }
+  }
   go('d-packages')
 }

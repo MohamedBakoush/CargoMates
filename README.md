@@ -30,7 +30,7 @@ Every booking is covered by the **CargoMates Promise**: a guaranteed delivery da
 2. **Bid** with a price, a pickup time and a pickup place. You go back to your dashboard, where the job waits under "Your active jobs" until the sender accepts.
 3. **Pick up** with photos and get a tracking label. The job shows "In transit" while you drive, and **drop-off** (photo and QR scan) unlocks when you arrive.
 
-Sender and driver talk through an in-app **chat**; the sender's note on the booking is the first message. Senders cannot call drivers, but can ask for a call once the truck is within 30 km. Both sides have a **profile** with a star rating. The sender's links to Orders (receipts, tracking and payment) and the Calendar; the driver's lists completed jobs.
+Sender and driver talk through an in-app **chat**; the sender's note on the booking is the first message. Senders cannot call drivers, but can ask for a call once the truck is within 30 km. After each job both sides **rate each other** (one to five stars). Both sides have a **profile** with a star rating. The sender's links to Orders (receipts, tracking and payment) and the Calendar; the driver's lists completed jobs.
 
 ## Run it
 
@@ -77,7 +77,7 @@ src/
 - **Timing**: the sender accepts a driver's bid after 6–9 seconds, and the drive to the drop-off takes 15–20 seconds. To skip the wait in a demo, use **Prototype: accept now** (under a waiting job, or on its package page) and **Prototype: arrive now** (on a package in transit). On the sender side, **Skip** on the tracking page moves the truck close, then to arrival.
 - **Drop-off photo**: the picture on the arrival page is a drawing, not a real photo.
 - **Chat**: the other side answers with canned replies.
-- **Profiles and ratings**: `PROFILES` and the seeded past jobs are placeholders, and there is no way to give a rating yet.
+- **Profiles and ratings**: `PROFILES` and the seeded past jobs are placeholders. Senders rate the driver on a paid receipt and drivers rate the sender right after confirming delivery (or later under Completed), but those ratings are only stored, not added to anyone's average.
 - **Guarantee amounts**: the figures in `GUARANTEES` are placeholders.
 - **Payment**: the Pay button just marks it paid.
 - **Storage**: the draft, order history and driver route live in `localStorage`.

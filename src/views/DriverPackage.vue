@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive, driverAccept, fmtDay } from '../store.js'
+import { state, go, eur, driverBid, driverConfirmPickup, driverGoTracking, PICKUP_TIMES, PICKUP_LOCATIONS, transitPercent, kmLeft, driverArrive, driverAccept, fmtDay, rateSender } from '../store.js'
 import Icon from '../components/Icon.vue'
+import StarRating from '../components/StarRating.vue'
 import RouteMap from '../components/RouteMap.vue'
 
 const pkg = computed(() => state.driverActive)
@@ -155,6 +156,9 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destinat
         <div class="check-circle done-circle"><Icon name="check" :size="28" /></div>
         <h2>Delivered</h2>
         <p class="muted">Completed on {{ fmtDay(pkg.deliveredDate) }}</p>
+        <p class="rate-q">{{ pkg.ratedSender ? `You rated ${pkg.sender}` : `How was ${pkg.sender}?` }}</p>
+        <StarRating :model-value="pkg.ratedSender || 0" :readonly="!!pkg.ratedSender" :label="`Rate ${pkg.sender}`"
+                    @update:model-value="(n) => rateSender(pkg, n)" />
       </div>
     </div>
 
@@ -218,6 +222,7 @@ const canDropoff = computed(() => pkg.value && pkg.value.status === 'at-destinat
 .status-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; text-align: center; }
 .status-panel h2 { margin: 0; font-size: 22px; }
 .status-panel p { margin: 0; }
+.rate-q { margin-top: 8px !important; font-size: 16px; font-weight: 600; }
 .transit-bar { display: block; width: 100%; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
 .transit-fill { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.9s linear; }
 .btn-driver:disabled { opacity: 0.45; cursor: not-allowed; }

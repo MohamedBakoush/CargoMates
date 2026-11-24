@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES, transitPercent, kmLeft, driverAccept } from '../store.js'
+import { go, state, eur, switchMode, driverViewPackage, driverMatches, DRIVER_PLACES, DRIVER_COUNTRIES, transitPercent, kmLeft, driverAccept, rateSender } from '../store.js'
 import Icon from '../components/Icon.vue'
+import StarRating from '../components/StarRating.vue'
 import Picker from '../components/Picker.vue'
 import RouteMap from '../components/RouteMap.vue'
 
@@ -129,14 +130,21 @@ function statusClass(s) {
 
       <section v-if="delivered.length" class="pkg-section">
         <h2 class="section-title">Completed</h2>
-        <button v-for="pkg in delivered" :key="pkg.id" class="pkg-card done-card" @click="driverViewPackage(pkg.id)">
-          <div class="pkg-icon done-icon"><Icon name="check" :size="22" /></div>
-          <div class="pkg-info">
-            <span class="pkg-route">{{ pkg.from }} → {{ pkg.to }}</span>
-            <span class="pkg-what">{{ pkg.what }}</span>
-            <span class="status-badge st-done">Delivered</span>
+        <div v-for="pkg in delivered" :key="pkg.id" class="done-item">
+          <button class="pkg-card done-card" @click="driverViewPackage(pkg.id)">
+            <div class="pkg-icon done-icon"><Icon name="check" :size="22" /></div>
+            <div class="pkg-info">
+              <span class="pkg-route">{{ pkg.from }} → {{ pkg.to }}</span>
+              <span class="pkg-what">{{ pkg.what }}</span>
+              <span class="status-badge st-done">Delivered</span>
+            </div>
+          </button>
+          <div class="rate-row" :class="{ done: pkg.ratedSender }">
+            <span class="rate-label">{{ pkg.ratedSender ? `You rated ${pkg.sender}` : `Rate ${pkg.sender}` }}</span>
+            <StarRating :model-value="pkg.ratedSender || 0" :readonly="!!pkg.ratedSender" :label="`Rate ${pkg.sender}`"
+                        @update:model-value="(n) => rateSender(pkg, n)" />
           </div>
-        </button>
+        </div>
       </section>
     </div>
 
@@ -196,7 +204,11 @@ function statusClass(s) {
 
 
 
-.done-card { opacity: 0.7; }
+.done-item { display: flex; flex-direction: column; gap: 6px; }
+.done-card { opacity: 0.8; }
+.rate-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 4px 6px 4px 16px; border-radius: 14px; background: #FFF6EC; }
+.rate-row.done { background: var(--soft); padding-block: 10px; }
+.rate-label { font-size: 15px; font-weight: 600; }
 
 .notice { display: flex; align-items: flex-start; gap: 10px; padding: 12px 12px 12px 14px; border-radius: 16px; background: #FFF3E0; color: #7A3E00; font-size: 15px; line-height: 1.35; animation: notice-in 0.3s ease-out; }
 .notice.accepted { background: #E6F5E6; color: #1E5E2B; }
