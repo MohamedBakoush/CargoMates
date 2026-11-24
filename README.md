@@ -24,13 +24,13 @@ Every booking is covered by the **CargoMates Promise**: a guaranteed delivery da
 
 | Packages on your route | Chat | Profile and ratings |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/07-driver-route.jpg" width="200" alt="Driver route from Madrid to Malmö with matching packages listed by detour"> | <img src="docs/screenshots/05-chat.jpg" width="200" alt="Chat between sender and driver"> | <img src="docs/screenshots/06-profile.jpg" width="200" alt="Profile with star rating and list of orders"> |
+| <img src="docs/screenshots/07-driver-route.jpg" width="200" alt="Driver route from Madrid to Malmö with matching packages listed by detour"> | <img src="docs/screenshots/05-chat.jpg" width="200" alt="Chat between sender and driver"> | <img src="docs/screenshots/06-profile.jpg" width="200" alt="Sender profile with star rating, stats, and links to Orders and Calendar"> |
 
 1. **Enter your route** ("I am driving from Madrid to Malmö") and the countries you take jobs in. Packages are grouped into "On your route" and "A bit off your route", each with the extra kilometres it adds.
 2. **Bid** with a price, a pickup time and a pickup place. You go back to your dashboard, where the job waits under "Your active jobs" until the sender accepts.
 3. **Pick up** with photos and get a tracking label. The job shows "In transit" while you drive, and **drop-off** (photo and QR scan) unlocks when you arrive.
 
-Sender and driver talk through an in-app **chat**; the sender's note on the booking is the first message. Senders cannot call drivers, but can ask for a call once the truck is within 30 km. Both sides have a **profile** with a star rating: orders for the sender, completed jobs for the driver.
+Sender and driver talk through an in-app **chat**; the sender's note on the booking is the first message. Senders cannot call drivers, but can ask for a call once the truck is within 30 km. Both sides have a **profile** with a star rating. The sender's links to Orders (receipts, tracking and payment) and the Calendar; the driver's lists completed jobs.
 
 ## Run it
 

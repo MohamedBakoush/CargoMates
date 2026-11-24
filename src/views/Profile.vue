@@ -1,5 +1,5 @@
 <script setup>
-// One profile page for both sides: #profile is the sender (their orders),
+// One profile page for both sides: #profile is the sender (links to Orders and Calendar),
 // #d-profile is the driver (their completed jobs). Each shows that person's star rating.
 import { computed } from 'vue'
 import { state, go, eur, fmtDay, PROFILES, allOrders } from '../store.js'
@@ -9,8 +9,6 @@ const asDriver = state.route === 'd-profile'
 const me = asDriver ? PROFILES.driver : PROFILES.sender
 const initials = me.name.split(' ').map((w) => w[0]).join('')
 
-const STATUS = { paid: 'Paid', booked: 'Booked', onway: 'On the way', arrived: 'Arrived' }
-
 // Sender: every order. Driver: finished jobs, newest first.
 const rows = computed(() => {
   if (!asDriver) {
@@ -18,7 +16,7 @@ const rows = computed(() => {
       .sort((a, b) => (b.pickup || '').localeCompare(a.pickup || ''))
       .map((o) => ({
         id: o.id, route: `${o.from || 'Madrid'} → ${o.to || o.title}`, sub: `${o.what} · ${fmtDay(o.pickup)}`,
-        price: o.price || 0, badge: STATUS[o.status] || o.status, done: o.status === 'paid', open: () => openOrder(o.id),
+        price: o.price || 0, done: o.status === 'paid',
       }))
   }
   const now = state.driverPackages.filter((p) => p.status === 'delivered').map((p) => ({
@@ -37,10 +35,6 @@ const stats = computed(() => asDriver
   ? [{ n: rows.value.length, label: 'Completed' }, { n: eur(total.value), label: 'Earned' }, { n: '98%', label: 'On time' }]
   : [{ n: rows.value.length, label: 'Orders' }, { n: eur(total.value), label: 'Paid' }, { n: me.ratings, label: 'Ratings' }])
 
-function openOrder(id) {
-  state.openOrder = id
-  go('history')
-}
 function back() {
   go(asDriver ? 'd-packages' : 'photos')
 }
@@ -78,6 +72,15 @@ function back() {
         </div>
       </section>
 
+      <button v-if="!asDriver" class="card link-card" @click="go('history')">
+        <span class="link-icon"><Icon name="receipt" :size="22" /></span>
+        <span class="row-main">
+          <span class="row-route">Orders</span>
+          <span class="muted row-sub">{{ rows.length }} shipment{{ rows.length === 1 ? '' : 's' }} · receipts, tracking and payment</span>
+        </span>
+        <Icon name="next" :size="18" class="muted" />
+      </button>
+
       <button v-if="!asDriver" class="card link-card" @click="go('calendar')">
         <span class="link-icon"><Icon name="calendar" :size="22" /></span>
         <span class="row-main">
@@ -87,22 +90,20 @@ function back() {
         <Icon name="next" :size="18" class="muted" />
       </button>
 
-      <section class="list">
-        <h2 class="section-title">{{ asDriver ? 'Completed orders' : 'Your orders' }}</h2>
-        <p v-if="!rows.length" class="muted">{{ asDriver ? 'No completed jobs yet.' : 'No orders yet.' }}</p>
-        <component :is="r.open ? 'button' : 'div'" v-for="r in rows" :key="r.id" class="row-card" @click="r.open && r.open()">
+      <section v-if="asDriver" class="list">
+        <h2 class="section-title">Completed orders</h2>
+        <p v-if="!rows.length" class="muted">No completed jobs yet.</p>
+        <div v-for="r in rows" :key="r.id" class="row-card">
           <span class="row-main">
             <span class="row-route">{{ r.route }}</span>
             <span class="muted row-sub">{{ r.sub }}</span>
           </span>
           <span class="row-right">
             <span class="row-price">{{ eur(r.price) }}</span>
-            <span v-if="r.badge" class="status-badge" :class="r.done ? 'st-done' : 'st-pending'">{{ r.badge }}</span>
-            <span v-else-if="r.rated" class="row-stars">{{ '★'.repeat(r.rated) }}</span>
+            <span v-if="r.rated" class="row-stars">{{ '★'.repeat(r.rated) }}</span>
             <span v-else class="muted row-sub">Not rated yet</span>
           </span>
-          <Icon v-if="r.open" name="next" :size="18" class="muted" />
-        </component>
+        </div>
       </section>
     </div>
   </div>
@@ -128,7 +129,6 @@ function back() {
 .list { display: flex; flex-direction: column; gap: 10px; }
 .section-title { font-size: 20px; font-weight: 600; margin: 4px 0 0; }
 .row-card { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: var(--radius); background: var(--card); text-align: left; }
-button.row-card:hover { border-color: var(--navy); }
 .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .row-route { font-size: 17px; font-weight: 600; }
 .row-sub { font-size: 14px; }

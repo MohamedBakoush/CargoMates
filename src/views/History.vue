@@ -4,8 +4,7 @@ import { state, go, fmtDay, eur, startNew, senderHome, allOrders, payOrder, payL
 import RouteMap from '../components/RouteMap.vue'
 import Icon from '../components/Icon.vue'
 
-const expandedId = ref(state.openOrder || (state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null))
-state.openOrder = null
+const expandedId = ref(state.justPaid && state.history.length ? state.history[state.history.length - 1].id : null)
 
 const orders = computed(() =>
   [...allOrders.value].sort((a, b) => (state.justPaid ? b.id.localeCompare(a.id, undefined, { numeric: true }) : 0) || (b.pickup || '').localeCompare(a.pickup || ''))

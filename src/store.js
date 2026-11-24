@@ -236,7 +236,6 @@ export const state = reactive({
   driverActive: null, // the package the driver is currently working on
   driverPast: seedDriverPast(),
   driverNotice: null, // banner on the driver dashboard: { kind: 'sent' | 'accepted', text, pkgId }
-  openOrder: null, // order to show expanded when Orders opens
   // where the driver is going, and which countries they take jobs in (empty = all of Europe)
   driverRoute: { from: '', to: '', countries: [], ...(saved && saved.driverRoute ? saved.driverRoute : {}) },
 })
